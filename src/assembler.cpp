@@ -5,7 +5,14 @@
 #include "../inc/assembler.hpp"
 #include "../inc/sectionTable.hpp"
 #include "../inc/Events.hpp"
+#include "../inc/codeGen.hpp"
+#include "../inc/instrHelp.hpp"
 
+// za prvi prolaz je ostalo:
+// tabela literala (uradio valjda dobro; samo u drugom prolazu postavi adrese)
+// tabela relokacionih zapisa (idk da l prvi ili drugi (vrv drugi))
+// .equ :( (tns i ta sranja) takodje treba da doradis parser da moze da cita izraze za equ
+// provera greske (uradjeno ali treba da se testira)
 
 int main(int argc,char** argv){
 
@@ -23,6 +30,7 @@ int main(int argc,char** argv){
   sectionTable sTable;
   instrHelp::initInstr();
   int cnt=0;
+  context* con=new context(&sTable,&table,nullptr,&cnt);
 
   instruction *cur=instrHead;
 
@@ -41,17 +49,28 @@ int main(int argc,char** argv){
       }
     }else {
       //ovde idemo ako instrukcija ili direktiva
+
+      if(!instrHelp::isValid(cur)) {
+        printf("%s je sjeban",cur->name);
+        return -3;
+      }
       //treba da proverimo da li ima neki simbol u argumentima
       argument* curArg=cur->arg1;
       for(;curArg;curArg=curArg->next){
         char* n=instrHelp::getSymbolsFromArg(curArg);
         if(n) table.insertSymb(n,0,2,0,false,false);
+        if(curArg->type==1){
+          if(strcmp(cur->name,".equ")!=0){
+            LPool* pool=sTable.getLPool(sectionTable::curSection);
+            pool->insertLit(curArg->val1,0);
+          }
+        }
       }
 
       cnt+=instrHelp::getInstrSize(cur);
 
       // zapravo uradi ono sto instrukcija radi u prvom prolazu
-      
+      // placeholder kod sredi ovo pls
       if(strcmp(cur->name,".section")==0){
         Events::sectionFP(&sTable,&table,cur->arg1->name,&cnt);  
       }
@@ -68,13 +87,16 @@ int main(int argc,char** argv){
         Events::endFP(&sTable,cnt);
       }
       
+      
     }
     
   }
-
+  
+  sTable.solvePools();
   table.printTable();
   printf("\n");
   sTable.printTable();
+  sTable.printAllPools();
 
   return 0;
 }

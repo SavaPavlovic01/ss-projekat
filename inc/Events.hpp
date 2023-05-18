@@ -3,6 +3,7 @@
 
 #include "sectionTable.hpp"
 #include "symbTable.hpp"
+#include "instruction.h"
 
 class Events{
 

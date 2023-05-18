@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include "LPool.hpp"
 
 // u prvom prolazu postavis sva polja
 // u drugom emitujes sadrzaj sekcije (sta god to znacilo)
@@ -12,8 +13,8 @@ typedef struct sectionTableItem{
   int base;
   int len;
   int cnt;
-
-  sectionTableItem(char* name,int base,int len,int cnt):name(name),base(base),len(len),cnt(cnt) {}
+  LPool* pool;
+  sectionTableItem(char* name,int base,int len,int cnt):name(name),base(base),len(len),cnt(cnt) {pool=new LPool();}
 }sectionTableItem;
 
 class sectionTable{
@@ -33,7 +34,15 @@ class sectionTable{
 
     void printTable();   
 
-    int getSectionId(char* name);   
+    int getSectionId(char* name);
+
+    LPool* getLPool(char* name);  
+
+    void printPool(char* name); 
+
+    void printAllPools();
+
+    void solvePools();
 
 };
 

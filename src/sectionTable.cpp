@@ -34,9 +34,35 @@ void sectionTable::printTable(){
   }  
 }
 
+void sectionTable::printAllPools(){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  printf("POOLS\n");
+  for(;itr!=map.end();itr++){
+    itr->second->pool->printPool();
+  }    
+}
+
 int sectionTable::getSectionId(char* name){
   if(!name) return -1;
   sectionTableItem* item=this->getSection(name);
   if(item) return item->cnt;
   return -1;
+}
+
+LPool* sectionTable::getLPool(char* name){
+  sectionTableItem* item=getSection(name);
+  if(item) return item->pool;
+  return nullptr;
+}
+
+void sectionTable::printPool(char* name){
+  sectionTableItem* item=getSection(name);
+  if(item) item->pool->printPool(); 
+}
+
+void sectionTable::solvePools(){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  for(;itr!=map.end();itr++){
+    itr->second->pool->solve(itr->second->len);
+  }  
 }

@@ -1,6 +1,6 @@
 #ifndef _symbTable_hpp_
 #define _symbTable_hpp_
-#include "instrHelp.hpp"
+//#include "instrHelp.hpp"
 #include <unordered_map>
 
 // .global u prvom prolazu samo postavlja globalDef na true i postavlja vezivanje(type kod tebe) na globalno
@@ -36,6 +36,8 @@ class symbTable {
     int setGlobalDef(char* name,bool val);
 
     void printTable();
+
+    
 
 };
 

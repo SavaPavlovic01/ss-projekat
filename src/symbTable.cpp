@@ -60,3 +60,4 @@ int symbTable::setGlobalDef(char* name,bool val){
   item->type=1; //globalno vezivanje??? idk
   return 0;
 }
+

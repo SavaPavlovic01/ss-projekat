@@ -1,7 +1,7 @@
 #ifndef _instruction_h_
 #define _instruction_h_
 typedef enum adrMode {no,dir,memDir,memInd,pcRel,regDir,regInd,regIndOff} adrMode;
-typedef enum argType {reg,lit,symb} argType;
+typedef enum argType {reg,lit,symb,sysReg} argType;
 
 typedef struct argument{
   int type;
