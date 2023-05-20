@@ -114,7 +114,16 @@ ARGUMENT:
       $$=makeArg(0,5,NULL,15,-1,NULL);  
       printf("found pc\n");
     }else{
-      $$=makeArg(3,5,$2,-1,-1,NULL);
+      if(strcmp($2,"status")==0){
+        $$=makeArg(3,5,NULL,0,-1,NULL);
+      }
+      if(strcmp($2,"handler")==0){
+        $$=makeArg(3,5,NULL,1,-1,NULL);
+      }
+      if(strcmp($2,"cause")==0){
+        $$=makeArg(3,5,NULL,2,-1,NULL);
+      }
+      
       printf("found sys reg %s\n",$2);
     }
     
@@ -128,7 +137,17 @@ ARGUMENT:
       $$=makeArg(0,6,NULL,15,-1,NULL);  
       printf("found pc\n");
     }else{
-      $$=makeArg(3,6,$3,-1,-1,NULL);
+      if(strcmp($3,"status")==0){
+        
+        $$=makeArg(3,6,NULL,0,-1,NULL);
+      }
+      if(strcmp($3,"handler")==0){
+        $$=makeArg(3,6,NULL,1,-1,NULL);
+      }
+      if(strcmp($3,"cause")==0){
+        $$=makeArg(3,6,NULL,2,-1,NULL);
+      }
+      
       printf("found sys reg %s\n",$3);
     }
   }
@@ -141,7 +160,17 @@ ARGUMENT:
       $$=makeArg(0,7,NULL,15,$5,NULL);  
       printf("found pc\n");
     }else{
-      $$=makeArg(3,7,$3,-1,$5,NULL);
+      if(strcmp($3,"status")==0){
+        
+        $$=makeArg(3,7,NULL,0,$5,NULL);  
+      }
+      if(strcmp($3,"handler")==0){
+        $$=makeArg(3,7,NULL,1,$5,NULL);
+      }
+      if(strcmp($3,"cause")==0){
+        $$=makeArg(3,7,NULL,2,$5,NULL);
+      }
+      
       printf("found sys reg %s\n",$3);
     }
   
@@ -155,7 +184,17 @@ ARGUMENT:
       $$=makeArg(0,7,$5,15,-1,NULL);  
       printf("found pc\n");
     }else{
-      $$=makeArg(3,7,$3,-1,-1,NULL);// ovo nije dobro
+      if(strcmp($3,"status")==0){
+        
+        $$=makeArg(3,7,$5,0,-1,NULL);
+      }
+      if(strcmp($3,"handler")==0){
+       $$=makeArg(3,7,$5,1,-1,NULL);
+      }
+      if(strcmp($3,"cause")==0){
+        $$=makeArg(3,7,$5,2,-1,NULL);
+      }
+      
       printf("found sys reg %s\n",$3);
     }
   
@@ -201,7 +240,16 @@ ARGUMENT:
       $$=makeArg(0,5,NULL,15,-1,$4);  
       printf("found pc\n");
     }else{
-      $$=makeArg(3,5,$2,-1,-1,$4);
+      if(strcmp($2,"status")==0){
+        $$=makeArg(3,5,NULL,0,-1,$4);
+      }
+      if(strcmp($2,"handler")==0){
+        $$=makeArg(3,5,NULL,1,-1,$4);
+      }
+      if(strcmp($2,"cause")==0){
+        $$=makeArg(3,5,NULL,2,-1,$4);
+      }
+      
       printf("found sys reg %s\n",$2);
     }
   }
@@ -214,7 +262,17 @@ ARGUMENT:
       $$=makeArg(0,6,NULL,15,-1,$6);  
       printf("found pc\n");
     }else{
-      $$=makeArg(3,6,$3,-1,-1,$6);
+      if(strcmp($3,"status")==0){
+        
+        $$=makeArg(3,6,NULL,0,-1,$6);
+      }
+      if(strcmp($3,"handler")==0){
+        $$=makeArg(3,6,NULL,1,-1,$6);
+      }
+      if(strcmp($3,"cause")==0){
+        $$=makeArg(3,6,NULL,2,-1,$6);
+      }
+      
       printf("found sys reg %s\n",$3);
     }
   }
@@ -227,12 +285,22 @@ ARGUMENT:
       $$=makeArg(0,7,NULL,15,$5,$8);  
       printf("found pc\n");
     }else{
-      $$=makeArg(3,7,$3,-1,$5,$8);
+      if(strcmp($3,"status")==0){
+        
+        $$=makeArg(3,7,NULL,0,$5,$8);  
+      }
+      if(strcmp($3,"handler")==0){
+        $$=makeArg(3,7,NULL,1,$5,$8);
+      }
+      if(strcmp($3,"cause")==0){
+        $$=makeArg(3,7,NULL,2,$5,$8);
+      }
+      
       printf("found sys reg %s\n",$3);
     }
   }
   | LSQR PRC STRING PLUS STRING RSQR COMMA ARGUMENT {
-    if(strcmp($3,"sp")==0){
+   if(strcmp($3,"sp")==0){
       $$=makeArg(0,7,$5,14,-1,$8);  
       printf("found sp\n");
     }
@@ -240,7 +308,17 @@ ARGUMENT:
       $$=makeArg(0,7,$5,15,-1,$8);  
       printf("found pc\n");
     }else{
-      $$=makeArg(3,7,$3,-1,-1,$8);// ovo nije dobro
+      if(strcmp($3,"status")==0){
+        
+        $$=makeArg(3,7,$5,0,-1,$8);
+      }
+      if(strcmp($3,"handler")==0){
+       $$=makeArg(3,7,$5,1,-1,$8);
+      }
+      if(strcmp($3,"cause")==0){
+        $$=makeArg(3,7,$5,2,-1,$8);
+      }
+      
       printf("found sys reg %s\n",$3);
     }
   };

@@ -4,6 +4,7 @@
 #include "instruction.h"
 #include "sectionTable.hpp"
 #include "symbTable.hpp"
+#include "relocTable.hpp"
 
 typedef struct generated{
   int code;
@@ -17,8 +18,9 @@ typedef struct context{
   symbTable* symbtable;
   instruction* instr;
   int* count;
-  context(sectionTable* secTable,symbTable* symbtable,instruction* instr,int* count):secTable(secTable),symbtable(symbtable),
-    instr(instr),count(count) {}
+  relocTable* rTable;
+  context(sectionTable* secTable,symbTable* symbtable,instruction* instr,int* count,relocTable* rTable):secTable(secTable),symbtable(symbtable),
+    instr(instr),count(count),rTable(rTable) {}
 }context;
 
 class codeGen{

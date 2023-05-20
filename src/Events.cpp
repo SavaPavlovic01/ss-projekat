@@ -24,3 +24,8 @@ void Events::externFP(symbTable* table,char* name){
 void Events::endFP(sectionTable* table,int cnt){
   table->setLen(sectionTable::curSection,cnt);
 }
+
+void Events::sectionSP(char* name,int* cnt){
+  sectionTable::curSection=name;
+  *cnt=0;
+}

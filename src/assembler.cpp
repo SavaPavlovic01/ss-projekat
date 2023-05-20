@@ -7,6 +7,7 @@
 #include "../inc/Events.hpp"
 #include "../inc/codeGen.hpp"
 #include "../inc/instrHelp.hpp"
+#include "../inc/relocTable.hpp"
 
 // za prvi prolaz je ostalo:
 // tabela literala (uradio valjda dobro; samo u drugom prolazu postavi adrese)
@@ -28,15 +29,17 @@ int main(int argc,char** argv){
 
   symbTable table;
   sectionTable sTable;
-  instrHelp::initInstr();
+  relocTable rTable;
+  instrHelp help;
+  help.initInstr();
   int cnt=0;
-  context* con=new context(&sTable,&table,nullptr,&cnt);
+  context* con=new context(&sTable,&table,nullptr,&cnt,&rTable);
 
   instruction *cur=instrHead;
 
   for(;cur;cur=cur->next){
     std::string str(cur->name);
-    if(instrHelp::getInstrType(cur->name)==-2){
+    if(help.getInstrType(cur->name)==-2){
       //ovde idemo ako nije instrukcija ili direktiva (znaci mora definicija simbola)
       if(cur->isLabel==1){
         if(!table.insertSymb(cur->name,sTable.getSectionId(sectionTable::curSection),2,cnt,false,true)){
@@ -50,14 +53,14 @@ int main(int argc,char** argv){
     }else {
       //ovde idemo ako instrukcija ili direktiva
 
-      if(!instrHelp::isValid(cur)) {
+      if(!help.isValid(cur)) {
         printf("%s je sjeban",cur->name);
         return -3;
       }
       //treba da proverimo da li ima neki simbol u argumentima
       argument* curArg=cur->arg1;
       for(;curArg;curArg=curArg->next){
-        char* n=instrHelp::getSymbolsFromArg(curArg);
+        char* n=help.getSymbolsFromArg(curArg);
         if(n) table.insertSymb(n,0,2,0,false,false);
         if(curArg->type==1){
           if(strcmp(cur->name,".equ")!=0){
@@ -73,7 +76,7 @@ int main(int argc,char** argv){
         }
       }
 
-      cnt+=instrHelp::getInstrSize(cur);
+      cnt+=help.getInstrSize(cur);
 
       // zapravo uradi ono sto instrukcija radi u prvom prolazu
       // placeholder kod sredi ovo pls
@@ -103,6 +106,23 @@ int main(int argc,char** argv){
   printf("\n");
   sTable.printTable();
   sTable.printAllPools();
+  sectionTable::curSection=nullptr;
+  cur=instrHead;
+  cnt=0;
+  for(;cur;cur=cur->next){
+    con->instr=cur;
+    generated* gen=help.getCode(con);
+    for(;gen;gen=gen->next){
+      //printf("%s:%x\n",cur->name,gen->code);
+    }
+    cnt+=help.getInstrSize(cur);
+    if(strcmp(cur->name,".section")==0){
+        Events::sectionFP(&sTable,&table,cur->arg1->name,&cnt);  
+    }
+   
+  }
+
+  rTable.printTable();
 
   return 0;
 }

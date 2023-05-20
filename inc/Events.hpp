@@ -18,6 +18,8 @@ class Events{
     static void externFP(symbTable* table,char* name);
 
     static void endFP(sectionTable* secTable,int cnt);
+
+    static void sectionSP(char* name,int* cnt);
 };
 
 #endif

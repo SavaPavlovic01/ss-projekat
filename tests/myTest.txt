@@ -1,0 +1,6 @@
+.section sekcija1
+  bne %r1,%r1,skoci
+.section sekcija2
+skoci:
+  add %r1,%r1
+.end

@@ -2,7 +2,7 @@
 #include <iterator>
 
 
-std::map<std::string,instrInfo*> instrHelp::instrMap={};
+
 /*
 * 0 is instruction
 * 1 is directive
@@ -49,6 +49,15 @@ int instrHelp::calcSize(instruction* instr){
   if(str.compare(".ascii")==0){
     return (std::string(instr->arg1->name).size()-2)*8;
   }
+  if(str.compare("st")==0){
+    if(instr->arg1->next->type==0 && instr->arg1->next->mode==6) return 4;
+    else return 16;
+  }
+  if(str.compare("ld")==0){
+    if((instr->arg1->type==0 && instr->arg1->mode==7)) return 16;
+    if((instr->arg1->type==1 && instr->arg1->mode==2)) return 8;
+    else return 4;
+  }
 
   return -1;
 }
@@ -69,6 +78,7 @@ generated* instrHelp::getCode(context* context)
   std::string str(instr->name);
   std::map<std::string, instrInfo*>::iterator itr=instrMap.find(str);
   if(itr==instrMap.end()) return nullptr;
+  if(itr->second->generateCode==nullptr) return nullptr;
   return itr->second->generateCode(context);   
 }
 
@@ -123,18 +133,20 @@ bool instrHelp::isValid(instruction* instr){
 
 void instrHelp::initInstr(){
   // neke instrukcije mozda nemaju 1-1 slikanje u masinsku pa ce neke mozda morati vise od 4
-  instrMap["halt"]=new instrInfo(0,0,4,-1,-1,-1,nullptr);
-  instrMap["int"]=new instrInfo(0,0,4,-1,-1,-1,nullptr);
-  instrMap["iret"]=new instrInfo(0,0,4,-1,-1,-1,nullptr);
-  instrMap["call"]=new instrInfo(1,0,4,6,-1,-1,nullptr);
-  instrMap["ret"]=new instrInfo(0,0,4,-1,-1,-1,nullptr);
-  instrMap["jmp"]=new instrInfo(1,0,4,6,-1,-1,nullptr);
-  instrMap["beq"]=new instrInfo(3,0,4,1,1,6,nullptr);
-  instrMap["bne"]=new instrInfo(3,0,4,1,1,6,nullptr);
-  instrMap["bgt"]=new instrInfo(3,0,4,1,1,6,nullptr);
-  instrMap["push"]=new instrInfo(1,0,4,1,-1,-1,nullptr);
-  instrMap["pop"]=new instrInfo(1,0,4,1,-1,-1,nullptr);
-  instrMap["xchg"]=new instrInfo(2,0,4,1,1,-1,nullptr);
+  instrInfo* info=new instrInfo(0,0,4,-1,-1,-1,&codeGen::halt);
+  instrMap["halt"]=info;
+  
+  instrMap["int"]=new instrInfo(0,0,4,-1,-1,-1,&codeGen::interupt);
+  instrMap["iret"]=new instrInfo(0,0,8,-1,-1,-1,&codeGen::iret);
+  instrMap["call"]=new instrInfo(1,0,4,6,-1,-1,&codeGen::call);
+  instrMap["ret"]=new instrInfo(0,0,4,-1,-1,-1,&codeGen::ret);
+  instrMap["jmp"]=new instrInfo(1,0,4,6,-1,-1,&codeGen::jmp);
+  instrMap["beq"]=new instrInfo(3,0,4,1,1,6,&codeGen::beq);
+  instrMap["bne"]=new instrInfo(3,0,4,1,1,6,&codeGen::bne);
+  instrMap["bgt"]=new instrInfo(3,0,4,1,1,6,&codeGen::bgt);
+  instrMap["push"]=new instrInfo(1,0,4,1,-1,-1,&codeGen::push);
+  instrMap["pop"]=new instrInfo(1,0,4,1,-1,-1,&codeGen::pop);
+  instrMap["xchg"]=new instrInfo(2,0,4,1,1,-1,&codeGen::xchg);
   instrMap["add"]=new instrInfo(2,0,4,1,1,-1,&codeGen::add);
   instrMap["sub"]=new instrInfo(2,0,4,1,1,-1,&codeGen::sub);
   instrMap["mul"]=new instrInfo(2,0,4,1,1,-1,&codeGen::mul);
@@ -145,10 +157,10 @@ void instrHelp::initInstr(){
   instrMap["xor"]=new instrInfo(2,0,4,1,1,-1,&codeGen::bitXor);
   instrMap["shl"]=new instrInfo(2,0,4,1,1,-1,&codeGen::shl);
   instrMap["shr"]=new instrInfo(0,0,4,1,1,-1,&codeGen::shr);
-  instrMap["ld"]=new instrInfo(2,0,4,0,1,-1,nullptr);
-  instrMap["st"]=new instrInfo(2,0,4,1,0,-1,nullptr);
-  instrMap["csrrd"]=new instrInfo(2,0,4,2,1,-1,nullptr);
-  instrMap["csrwr"]=new instrInfo(2,0,4,1,2,-1,nullptr);
+  instrMap["ld"]=new instrInfo(2,0,-1,0,1,-1,&codeGen::ld);
+  instrMap["st"]=new instrInfo(2,0,-1,1,0,-1,&codeGen::st);
+  instrMap["csrrd"]=new instrInfo(2,0,4,2,1,-1,&codeGen::csrrd);
+  instrMap["csrwr"]=new instrInfo(2,0,4,1,2,-1,&codeGen::csrwr);
 
   instrMap[".global"]=new instrInfo(-1,1,0,3,-1,-1,nullptr);
   instrMap[".extern"]=new instrInfo(-1,1,0,3,-1,-1,nullptr);

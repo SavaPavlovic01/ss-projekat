@@ -32,30 +32,30 @@ typedef struct instrInfo{
 class instrHelp{
 
   
-  
+  std::map<std::string,instrInfo*> instrMap;
     
 
   public:
 
-    static std::map<std::string,instrInfo*> instrMap;
+    
 
-    static int getInstrType(char* name);
+    int getInstrType(char* name);
 
-    static bool isValid(instruction* instr);
+    bool isValid(instruction* instr);
 
-    static int getInstrArgNum(char* name);
+     int getInstrArgNum(char* name);
 
-    static char* getSymbolsFromArg(argument* arg);
+     char* getSymbolsFromArg(argument* arg);
 
-    static instrInfo* getAllInstrInfro(char* name);
+     instrInfo* getAllInstrInfro(char* name);
 
-    static int getInstrSize(instruction* instr);
+     int getInstrSize(instruction* instr);
 
-    static int calcSize(instruction* instr);
+     int calcSize(instruction* instr);
 
-    static generated* getCode(context*);
+     generated* getCode(context*);
 
-    static void initInstr();
+     void initInstr();
 };
 
 #endif
