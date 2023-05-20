@@ -35,6 +35,10 @@ class symbTable {
 
     int setGlobalDef(char* name,bool val);
 
+    int getSection(char* name);
+
+    int getValue(char* name);
+
     void printTable();
 
     

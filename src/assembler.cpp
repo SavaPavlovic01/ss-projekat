@@ -65,6 +65,12 @@ int main(int argc,char** argv){
             pool->insertLit(curArg->val1,0);
           }
         }
+        if(curArg->type==2){
+          if(sectionTable::curSection){
+            LPool* pool=sTable.getLPool(sectionTable::curSection);
+            pool->insertLit(curArg->name,0);
+          }
+        }
       }
 
       cnt+=instrHelp::getInstrSize(cur);

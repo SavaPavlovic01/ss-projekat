@@ -56,8 +56,21 @@ void symbTable::printTable(){
 
 int symbTable::setGlobalDef(char* name,bool val){
   symbTableItem* item=this->getSymb(name);
+  if(!item) return -1;
   item->globalDef=val;
   item->type=1; //globalno vezivanje??? idk
   return 0;
+}
+
+int symbTable::getSection(char* name){
+  symbTableItem* item=this->getSymb(name);  
+  if(!item) return -5;
+  return item->section;
+}
+
+int symbTable::getValue(char* name){
+  symbTableItem* item=this->getSymb(name);  
+  if(!item) return -5;
+  return item->value;  
 }
 
