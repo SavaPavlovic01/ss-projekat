@@ -146,8 +146,8 @@ generated* codeGen::bgt(context* context){
       int off=*(context->count);// ovo potencijalno moze da se menja
       int section=context->symbtable->getSection(arg->name);
       int addend=context->symbtable->getValue(arg->name)-4; //proveri
-      if(section==-2) context->rTable->addEntry(off,1,arg->name,0);
-      else context->rTable->addEntry(off,1,section,addend);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,arg->name,0);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,section,addend);
       return new generated(generate(0b0011,0b0011,15,instr->arg1->val1,instr->arg1->next->val1,0),nullptr);
       // treba relokacioni zapis (ova zadnja nula mora da se promeni) 
     }
@@ -175,8 +175,8 @@ generated* codeGen::bne(context* context){
       int off=*(context->count);// ovo potencijalno moze da se menja
       int section=context->symbtable->getSection(arg->name);
       int addend=context->symbtable->getValue(arg->name)-4; //proveri
-      if(section==-2) context->rTable->addEntry(off,1,arg->name,0);
-      else context->rTable->addEntry(off,1,section,addend);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,arg->name,0);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,section,addend);
       return new generated(generate(0b0011,0b0010,15,instr->arg1->val1,instr->arg1->next->val1,0),nullptr);
       // treba relokacioni zapis (ova zadnja nula mora da se promeni) 
     }
@@ -204,8 +204,8 @@ generated* codeGen::beq(context* context){
       int off=*(context->count);// ovo potencijalno moze da se menja
       int section=context->symbtable->getSection(arg->name);
       int addend=context->symbtable->getValue(arg->name)-4; //proveri
-      if(section==-2) context->rTable->addEntry(off,1,arg->name,0);
-      else context->rTable->addEntry(off,1,section,addend);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,arg->name,0);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,section,addend);
       return new generated(generate(0b0011,0b0001,15,instr->arg1->val1,instr->arg1->next->val1,0),nullptr);
       // treba relokacioni zapis (ova zadnja nula mora da se promeni) 
     }
@@ -233,8 +233,8 @@ generated* codeGen::call(context* context){
       int off=*(context->count);// ovo potencijalno moze da se menja
       int section=context->symbtable->getSection(instr->arg1->name);
       int addend=context->symbtable->getValue(instr->arg1->name)-4; //proveri
-      if(section==-2) context->rTable->addEntry(off,1,instr->arg1->name,0);
-      else context->rTable->addEntry(off,1,section,addend);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,instr->arg1->name,0);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,section,addend);
       return new generated(generate(0b0010,0b0000,15,0,0,0),nullptr);
       // treba relokacioni zapis (ova zadnja nula mora da se promeni) 
     }
@@ -275,8 +275,8 @@ generated* codeGen::jmp(context* context){
       int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->name);
       int section=context->symbtable->getSection(instr->arg1->name);
       int addend=context->symbtable->getValue(instr->arg1->name);
-      if(section==-2) context->rTable->addEntry(off,0,instr->arg1->name,addend);
-      else context->rTable->addEntry(off,0,section,addend);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,instr->arg1->name,addend);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
       return ret;
       //return new generated(generate(0b0011,0b0000,15,0,0,0),nullptr);
       // treba relokacioni zapis (ova zadnja nula mora da se promeni) 
@@ -313,8 +313,23 @@ generated* codeGen::st(context* context){
         cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
         return head;
       }else {
-        // + simbol !!!!OVO NE RADI ZBOG PARSERA POPRAVI!!!!!!!!!!!!!!!!
-        // isto kao plus literal samo treba da se procita vednost iz symbTable i relok zapis  
+        //simbol
+        int tempReg=1;
+        while(tempReg==arg2->val1 || tempReg==instr->arg1->val1) tempReg++;
+        generated* head=new generated(0,nullptr);
+        head->code=generate(0b1000,0b0001,14,0,tempReg,-4);// push %rx
+        int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg2->name)-*(context->count)-4;
+        head->next=new generated(generate(0b1001,0b0010,tempReg,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%r1
+        generated* cur=head->next;
+        cur->next=new generated(generate(0b1000,0b0000,arg2->val1,tempReg,instr->arg1->val1,0),nullptr);// st
+        cur=cur->next;
+        cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
+        int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg2->name);
+        int section=context->symbtable->getSection(arg2->name);
+        int addend=context->symbtable->getValue(arg2->name);
+        if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,arg2->name,addend);
+        else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
+        return head;
       }
     }
   }
@@ -352,8 +367,8 @@ generated* codeGen::st(context* context){
       int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg2->name);
       int section=context->symbtable->getSection(arg2->name);
       int addend=context->symbtable->getValue(arg2->name);
-      if(section==-2) context->rTable->addEntry(off,0,arg2->name,addend);
-      else context->rTable->addEntry(off,0,section,addend);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,arg2->name,addend);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
       return head;
       // i relokacioni zapis
     }
@@ -396,8 +411,23 @@ generated* codeGen::ld(context* context){
         cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
         return head;
       }else {
-        // + simbol !!!!OVO NE RADI ZBOG PARSERA POPRAVI!!!!!!!!!!!!!!!!
-        // isto kao plus literal samo treba da se procita vednost iz symbTable i relok zapis
+        int tempReg=1;
+        generated* head=new generated(0,nullptr);
+        if(instr->arg1->val1==1) tempReg=2; 
+        head->code=generate(0b1000,0b0001,14,0,tempReg,-4);// push %r1 ili r2;
+        
+        int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->name)-*(context->count)-4;
+        head->next=new generated(generate(0b1001,0b0010,tempReg,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%r1
+        generated* cur=head->next;
+        cur->next=new generated(generate(0b1001,0b0010,instr->arg1->next->val1,instr->arg1->val1,tempReg,0),nullptr);// ld
+        cur=cur->next;
+        cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
+        int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->name);
+        int section=context->symbtable->getSection(instr->arg1->name);
+        int addend=context->symbtable->getValue(instr->arg1->name);
+        if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,instr->arg1->name,addend);
+        else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
+        return head;
       }
       
     }
@@ -427,8 +457,8 @@ generated* codeGen::ld(context* context){
       int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->name);
       int section=context->symbtable->getSection(instr->arg1->name);
       int addend=context->symbtable->getValue(instr->arg1->name);
-      if(section==-2) context->rTable->addEntry(off,0,instr->arg1->name,addend);
-      else context->rTable->addEntry(off,0,section,addend);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,instr->arg1->name,addend);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
       return ret;
     }
     if(instr->arg1->mode==2){
@@ -440,8 +470,8 @@ generated* codeGen::ld(context* context){
       int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->name);
       int section=context->symbtable->getSection(instr->arg1->name);
       int addend=context->symbtable->getValue(instr->arg1->name);
-      if(section==-2) context->rTable->addEntry(off,0,instr->arg1->name,addend);
-      else context->rTable->addEntry(off,0,section,addend);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,instr->arg1->name,addend);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
       return head;
     }
   }

@@ -66,3 +66,81 @@ void sectionTable::solvePools(){
     itr->second->pool->solve(itr->second->len);
   }  
 }
+
+relocTable* sectionTable::getRelocTable(char* name){
+  sectionTableItem* item=getSection(name);
+  if(item) return item->table;   
+  return nullptr;
+}
+
+void sectionTable::printAllReloc(){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  printf("RELOC TABLES\n");
+  for(;itr!=map.end();itr++){
+    itr->second->table->printTable();
+  }      
+}
+
+void sectionTable::addContent(char* name,int code){
+  sectionTableItem* item=getSection(name);
+  if(!item) return;
+  item->content->push_back(new cc(code,0,0));
+}
+
+void sectionTable::addContent(char* name,char byte){
+  sectionTableItem* item=getSection(name);
+  if(!item) return;
+  item->content->push_back(new cc(-1,byte,1));  
+}
+
+void sectionTable::printCode(sectionTableItem* item){
+  std::vector<cc*> help=*(item->content);
+  for(int i=0;i<item->content->size();i++){
+    if(help[i]->type==0) printf("%x\n",help[i]->code);
+    else printf("%x\n",help[i]->byte);
+  }
+}
+
+void sectionTable::printAllCode(){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  printf("CODE \n");
+  for(;itr!=map.end();itr++){
+    printf("%s\n",itr->second->name);
+    printCode(itr->second);
+  }        
+}
+
+void sectionTable::writeSection(char* name,FILE* file){
+  sectionTableItem* item=getSection(name);
+  if(!item) return;
+  std::vector<cc*> help=*(item->content);
+  for(int i=0;i<help.size();i++){
+    if(help[i]->type==0){
+      fwrite(&(help[i]->code),4,1,file);
+    }else fwrite(&(help[i]->byte),1,1,file);
+  }
+}
+
+void sectionTable::writeNext(int num,FILE* file){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  int i=0;
+  for(;itr!=map.end();itr++){
+    if(i==num) {
+      writeSection(itr->second->name,file);
+      return;
+    }
+    i++;
+  }   
+}
+
+void sectionTable::writeNextReloc(int num,FILE* file){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  int i=0;
+  for(;itr!=map.end();itr++){
+    if(i==num) {
+      itr->second->table->writeTable(file);
+      return;
+    }
+    i++;
+  }     
+}

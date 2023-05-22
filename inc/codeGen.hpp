@@ -18,9 +18,8 @@ typedef struct context{
   symbTable* symbtable;
   instruction* instr;
   int* count;
-  relocTable* rTable;
-  context(sectionTable* secTable,symbTable* symbtable,instruction* instr,int* count,relocTable* rTable):secTable(secTable),symbtable(symbtable),
-    instr(instr),count(count),rTable(rTable) {}
+  context(sectionTable* secTable,symbTable* symbtable,instruction* instr,int* count):secTable(secTable),symbtable(symbtable),
+    instr(instr),count(count){}
 }context;
 
 class codeGen{

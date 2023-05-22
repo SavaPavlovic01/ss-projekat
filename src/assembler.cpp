@@ -8,12 +8,20 @@
 #include "../inc/codeGen.hpp"
 #include "../inc/instrHelp.hpp"
 #include "../inc/relocTable.hpp"
+#include <fstream>
+#include <iostream>
 
 // za prvi prolaz je ostalo:
 // tabela literala (uradio valjda dobro; samo u drugom prolazu postavi adrese)
 // tabela relokacionih zapisa (idk da l prvi ili drugi (vrv drugi))
 // .equ :( (tns i ta sranja) takodje treba da doradis parser da moze da cita izraze za equ
 // provera greske (uradjeno ali treba da se testira)
+// !!!NOVO!!!
+// fali provera da l je sve definisano
+// case sensitive (ovo najbolje u lexeru da resis)
+// equ :(
+// endian
+// dodaj da store neposredno bude greska
 
 int main(int argc,char** argv){
 
@@ -29,11 +37,11 @@ int main(int argc,char** argv){
 
   symbTable table;
   sectionTable sTable;
-  relocTable rTable;
+  
   instrHelp help;
   help.initInstr();
   int cnt=0;
-  context* con=new context(&sTable,&table,nullptr,&cnt,&rTable);
+  context* con=new context(&sTable,&table,nullptr,&cnt);
 
   instruction *cur=instrHead;
 
@@ -114,15 +122,36 @@ int main(int argc,char** argv){
     generated* gen=help.getCode(con);
     for(;gen;gen=gen->next){
       //printf("%s:%x\n",cur->name,gen->code);
+      sTable.addContent(sectionTable::curSection,gen->code);
     }
     cnt+=help.getInstrSize(cur);
     if(strcmp(cur->name,".section")==0){
         Events::sectionFP(&sTable,&table,cur->arg1->name,&cnt);  
     }
+
+    if(strcmp(cur->name,".ascii")==0){
+      Events::asciiSP(&sTable,cur);
+    }
+
+    if(strcmp(cur->name,".skip")==0){
+      Events::skipSP(&sTable,cur);
+    }
+
+    if(strcmp(cur->name,".word")==0){
+      Events::wordSP(&sTable,&table,cur,&cnt);
+    }
    
   }
 
-  rTable.printTable();
+  sTable.printAllReloc();
+
+  sTable.printAllCode();
+
+  FILE* out=fopen("test.o","wb");
+
+  sTable.writeNext(0,out);
+  sTable.writeNext(1,out);
+  sTable.writeNextReloc(0,out);
 
   return 0;
 }

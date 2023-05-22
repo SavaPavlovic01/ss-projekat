@@ -20,6 +20,12 @@ class Events{
     static void endFP(sectionTable* secTable,int cnt);
 
     static void sectionSP(char* name,int* cnt);
+
+    static void wordSP(sectionTable* secTable,symbTable* symbTable,instruction* instr,int* cnt);
+
+    static void skipSP(sectionTable* secTable,instruction* instr);
+
+    static void asciiSP(sectionTable* secTable,instruction* instr);
 };
 
 #endif

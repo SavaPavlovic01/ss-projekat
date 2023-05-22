@@ -29,3 +29,37 @@ void Events::sectionSP(char* name,int* cnt){
   sectionTable::curSection=name;
   *cnt=0;
 }
+
+void Events::wordSP(sectionTable* secTable,symbTable* symbTable,instruction* instr,int* cnt){
+  argument* arg=instr->arg1;
+  for(;arg;arg=arg->next){
+    if(arg->type==1){
+      secTable->addContent(sectionTable::curSection,arg->val1);
+    }
+    if(arg->type==2){
+      secTable->addContent(sectionTable::curSection,0);
+      int offset=*cnt;
+      int addend=symbTable->getValue(arg->name);
+      int section=symbTable->getSection(arg->name);
+      if(section==-2) secTable->getRelocTable(sectionTable::curSection)->addEntry(offset,0,arg->name,0);
+      else secTable->getRelocTable(sectionTable::curSection)->addEntry(offset,0,section,addend);
+    }
+  }
+}
+
+void Events::skipSP(sectionTable* secTable,instruction* instr){
+  for(int i=0;i<instr->arg1->val1;i++){
+    secTable->addContent(sectionTable::curSection,(char)0);  
+  }
+}
+
+void Events::asciiSP(sectionTable* secTable,instruction* instr){
+  char* str=instr->arg1->name;
+  str++;
+  while(*str!='\"'){
+     secTable->addContent(sectionTable::curSection,*str);
+     str++;
+  }
+ 
+ 
+}

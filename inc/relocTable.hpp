@@ -1,6 +1,8 @@
 #ifndef _relocTable_hpp_
 #define _relocTable_hpp_
 #include <vector>
+#include <stdlib.h>
+#include <stdio.h>
 
 typedef struct relocEntry{
   int offset;
@@ -21,6 +23,8 @@ class relocTable{
     void addEntry(int offset,int type,char* name,int addend);
 
     void printTable();
+
+    void writeTable(FILE* file);
 };
 
 #endif
