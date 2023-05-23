@@ -2,6 +2,7 @@
 #define _symbTable_hpp_
 //#include "instrHelp.hpp"
 #include <unordered_map>
+#include "sectionTable.hpp"
 
 // .global u prvom prolazu samo postavlja globalDef na true i postavlja vezivanje(type kod tebe) na globalno
 // u drugom samo proveri da li je definisano sve
@@ -41,7 +42,11 @@ class symbTable {
 
     void printTable();
 
-    
+    void writeTable(FILE* file,sectionTable* secTable);
+
+    int getSizeOnDisk();
+
+    bool isDefined();
 
 };
 

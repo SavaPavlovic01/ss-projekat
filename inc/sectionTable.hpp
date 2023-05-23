@@ -75,6 +75,10 @@ class sectionTable{
 
     void writeNextReloc(int num,FILE* file);
 
+    int getSizeOnDiskNext(int num);
+
+    int getSizeOnDiskSection(sectionTableItem* item);
+
 };
 
 #endif

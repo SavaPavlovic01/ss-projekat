@@ -56,7 +56,7 @@ void LPool::printPool(){
   }  
   std::map<std::string,literalEntry*>::iterator itr1=symbMap.begin();
   for(;itr1!=symbMap.end();itr1++){
-    printf("%s          %d          \n",itr1->second->name,itr1->second->adr);
+    printf("%s          %d          %x\n",itr1->second->name,itr1->second->adr,itr1->second->val);
   }   
 }
 
@@ -71,4 +71,28 @@ void LPool::solve(int start){
     itr1->second->adr=start;
     start+=4;
   }   
+}
+
+void LPool::writePool(FILE* file){
+  std::map<int,literalEntry*>::iterator itr=litMap.begin();
+  for(;itr!=litMap.end();itr++){
+    fwrite(&(itr->second->val),4,1,file);
+  }  
+  std::map<std::string,literalEntry*>::iterator itr1=symbMap.begin();
+  for(;itr1!=symbMap.end();itr1++){
+    fwrite(&(itr1->second->val),4,1,file);
+  }    
+}
+
+int LPool::sizeOfPool(){
+  int sz=0;
+  std::map<int,literalEntry*>::iterator itr=litMap.begin();
+  for(;itr!=litMap.end();itr++){
+    sz+=4;
+  }  
+  std::map<std::string,literalEntry*>::iterator itr1=symbMap.begin();
+  for(;itr1!=symbMap.end();itr1++){
+    sz+=4;
+  }  
+  return sz;   
 }

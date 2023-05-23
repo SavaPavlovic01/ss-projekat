@@ -5,7 +5,7 @@ SRCS:=./src/instruction.c ./misc/lex.yy.c ./misc/parser.tab.c ./src/assembler.cp
 DEPS:=./misc/parser.tab.h ./misc/lexer.h 
 
 all:${DEPS}
-	g++ ${SRCS} -g -o runMe
+	g++ ${SRCS} -g -o assembler
 
 ./misc/parser.tab.c ./misc/parser.tab.h:
 	bison --defines=./misc/parser.tab.h ./misc/parser.y --output=./misc/parser.tab.c
@@ -21,3 +21,7 @@ test:
 	gcc -c ./src/instruction.c ./misc/lex.yy.c ./misc/parser.tab.c
 	g++ -c ./src/main.cpp
 	g++ instruction.o lex.yy.o parser.tab.o main.o -o run
+
+obj:
+	rm -rf objdump
+	g++ ./src/objdump.cpp -g -o objdump

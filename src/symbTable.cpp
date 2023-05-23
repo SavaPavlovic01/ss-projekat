@@ -1,5 +1,6 @@
 #include "../inc/symbTable.hpp"
 #include <iterator>
+#include <string.h>
 
 bool symbTable::insertSymb(symbTableItem* item){
   if(getSymb(item->name)) return false;  
@@ -31,7 +32,7 @@ bool symbTable::insertSymb(char* name,int section,int type,int value,bool global
     }
     return true;
   } 
-  //vrv ovde treba update ako je tu al nije definisan
+  
   std::string str(name);
   table[str]=new symbTableItem(name,section,type,value,globalDef,isDef);  
   return true;
@@ -72,5 +73,43 @@ int symbTable::getValue(char* name){
   symbTableItem* item=this->getSymb(name);  
   if(!item) return -5;
   return item->value;  
+}
+
+void symbTable::writeTable(FILE* file,sectionTable* secTable){
+  std::unordered_map<std::string,symbTableItem*>::iterator itr=table.begin();
+  int sz=table.size();
+  fwrite(&sz,4,1,file);
+  char out=0;
+  for(;itr!=table.end();itr++){
+    fwrite(&(itr->second->value),4,1,file);
+    if(secTable->getSection(itr->second->name)) out=1;
+    else out=0;
+    fwrite(&out,sizeof(char),1,file);
+    fwrite(&(itr->second->type),4,1,file);
+    fwrite(&(itr->second->section),4,1,file);
+    fwrite(itr->second->name,sizeof(char),strlen(itr->second->name)+1,file);
+    fwrite(&(itr->second->globalDef),sizeof(bool),1,file);
+  }  
+}
+
+int symbTable::getSizeOnDisk(){
+  int sz=4;
+  std::unordered_map<std::string,symbTableItem*>::iterator itr=table.begin();
+  for(;itr!=table.end();itr++){
+    sz+=(4+sizeof(char)+4+4+(strlen(itr->second->name)+1)*sizeof(char)+sizeof(bool));
+  }  
+
+  return sz;
+}
+
+bool symbTable::isDefined(){
+  std::unordered_map<std::string,symbTableItem*>::iterator itr=table.begin();
+  for(;itr!=table.end();itr++){
+    if(!(itr->second->isDef)){
+      printf("%s is not defined",itr->second->name);
+      exit(0);
+    }
+  }
+  return true;  
 }
 

@@ -119,6 +119,8 @@ void sectionTable::writeSection(char* name,FILE* file){
       fwrite(&(help[i]->code),4,1,file);
     }else fwrite(&(help[i]->byte),1,1,file);
   }
+
+  getLPool(name)->writePool(file);
 }
 
 void sectionTable::writeNext(int num,FILE* file){
@@ -143,4 +145,31 @@ void sectionTable::writeNextReloc(int num,FILE* file){
     }
     i++;
   }     
+}
+
+int sectionTable::getSizeOnDiskNext(int num){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  int i=0;
+  int sz=0;
+  for(;itr!=map.end();itr++){
+    if(i==num) {
+      
+      return getSizeOnDiskSection(itr->second);
+    }
+    i++;
+  }     
+}
+
+int sectionTable::getSizeOnDiskSection(sectionTableItem* item){
+  int sz=0;
+  if(!item) return -1;
+  std::vector<cc*> help=*(item->content);
+  for(int i=0;i<help.size();i++){
+    if(help[i]->type==0){
+      sz+=4;
+    }else sz+=1;
+  }
+
+  sz+=item->pool->sizeOfPool(); 
+  return sz;
 }

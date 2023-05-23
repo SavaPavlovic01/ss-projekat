@@ -25,6 +25,8 @@ class relocTable{
     void printTable();
 
     void writeTable(FILE* file);
+
+    int getSizeOnDisk();
 };
 
 #endif

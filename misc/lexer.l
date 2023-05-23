@@ -2,6 +2,7 @@
   #include "parser.tab.h"
   #include <stdio.h>
   #include <stdlib.h>
+  #include <ctype.h>
 %}
 
 %option noyywrap
@@ -11,7 +12,13 @@
 [ \t] {}
 
 [A-Za-z_\.][A-Za-z0-9_]* {
+  char* temp=yytext;
+  while(*temp!='\0'){
+    *temp=tolower(*temp);
+    temp++;
+  }
   yylval.str=strdup(yytext);
+  
   return STRING;
 }
 

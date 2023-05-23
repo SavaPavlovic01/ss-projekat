@@ -37,6 +37,10 @@ class LPool{
     void printPool();
 
     void solve(int start);
+
+    void writePool(FILE* file);
+
+    int sizeOfPool();
 };
 
 #endif

@@ -30,3 +30,12 @@ void relocTable::writeTable(FILE* file){
     if(vector[i]->symbol==-5) fwrite(vector[i]->name,sizeof(char),strlen(vector[i]->name)+1,file);
   }
 }
+
+int relocTable::getSizeOnDisk(){
+  int siz=vector.size();
+  int sz=4;
+  for(int i=0;i<vector.size();i++){
+    sz+=(4+4+4+4);
+    if(vector[i]->symbol==-5) sz+=((strlen(vector[i]->name)+1)*sizeof(char));
+  }  
+}

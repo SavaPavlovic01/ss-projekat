@@ -1,6 +1,6 @@
 #include "../inc/instrHelp.hpp"
 #include <iterator>
-
+#include <string.h>
 
 
 /*
@@ -47,7 +47,7 @@ int instrHelp::calcSize(instruction* instr){
     return instr->arg1->val1;
   }
   if(str.compare(".ascii")==0){
-    return (std::string(instr->arg1->name).size()-2)*8;
+    return (std::string(instr->arg1->name).size()-2);
   }
   if(str.compare("st")==0){
     if(instr->arg1->next->type==0 && instr->arg1->next->mode==6) return 4;
@@ -86,6 +86,11 @@ bool instrHelp::isValid(instruction* instr){
   instrInfo* info=instrHelp::getAllInstrInfro(instr->name);
   argument* arg=instr->arg1;
   int cnt=0;
+  if(strcmp(instr->name,"st")==0){
+    if(instr->arg1->next->type==2 && instr->arg1->next->mode==1) return false;
+    if(instr->arg1->next->type==1 && instr->arg1->next->mode==1) return false;
+    return true;
+  }
   if(info->argCnt!=-1){
     for(;arg;arg=arg->next){
       cnt++;
