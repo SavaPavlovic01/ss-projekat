@@ -1,4 +1,5 @@
 #include "../inc/sectionTable.hpp"
+#include <string.h>
 
 char* sectionTable::curSection=nullptr;
 
@@ -11,17 +12,29 @@ bool sectionTable::insertSection(char* name,int base,int len){
 }
 
 sectionTableItem* sectionTable::getSection(char* name){
-  std::string str(name);
-  std::map<std::string,sectionTableItem*>::iterator itr=map.find(str);
-  if(itr==map.end()) return nullptr;
-  return itr->second;
-}
+  std::string str;
+  if(name==nullptr){
+    std::string str("ABS\0");
+    std::map<std::string,sectionTableItem*>::iterator itr=map.find(str);
+    if(itr==map.end()) return nullptr;
+    return itr->second;
+  }
+  else{
+    std::string str(name);
+    std::map<std::string,sectionTableItem*>::iterator itr=map.find(str);
+    if(itr==map.end()) return nullptr;
+    return itr->second;
+  }
+} 
 
 bool sectionTable::setLen(char* name,int len){
-  std::string str(name);
+  /*std::string str(name);
   std::map<std::string,sectionTableItem*>::iterator itr=map.find(str);
   if(itr==map.end()) return false;
   itr->second->len=len;
+  return true;*/
+  sectionTableItem* item=getSection(name);
+  if(item) item->len=len;
   return true;
 }
 
@@ -158,10 +171,11 @@ int sectionTable::getSizeOnDiskNext(int num){
     }
     i++;
   }     
+  return -1;
 }
 
 int sectionTable::getSizeOnDiskSection(sectionTableItem* item){
-  int sz=0;
+  int sz=4;
   if(!item) return -1;
   std::vector<cc*> help=*(item->content);
   for(int i=0;i<help.size();i++){
@@ -172,4 +186,89 @@ int sectionTable::getSizeOnDiskSection(sectionTableItem* item){
 
   sz+=item->pool->sizeOfPool(); 
   return sz;
+}
+
+void sectionTable::writeTable(FILE* file){
+  int cnt=map.size();
+  fwrite(&cnt,4,1,file);
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  for(;itr!=map.end();itr++){
+    fwrite(&(itr->second->cnt),4,1,file);
+    fwrite(&(itr->second->base),4,1,file);
+    fwrite(&(itr->second->len),4,1,file);
+    fwrite(itr->second->name,sizeof(char),strlen(itr->second->name)+1,file);
+  }
+
+}
+
+int sectionTable::getSize(){
+  int cnt=4;
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  for(;itr!=map.end();itr++){
+    cnt+=4;
+    cnt+=4;
+    cnt+=4;
+    cnt+=strlen(itr->second->name)+1;
+  }
+  return cnt;
+}
+
+void sectionTable::addContent(int num,char byte){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  int i=0;
+  for(;itr!=map.end();itr++){
+    if(i==num) {
+      itr->second->content->push_back(new cc(-1,byte,1));
+      return;
+    }
+    i++;
+  }       
+}
+
+relocTable* sectionTable::getRelocTable(int num){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  int i=0;
+  for(;itr!=map.end();itr++){
+    if(i==num) {
+      return itr->second->table;
+    }
+    i++;
+  }       
+  return nullptr;
+}
+
+sectionTableItem* sectionTable::getSection(int num){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  int i=0;
+  for(;itr!=map.end();itr++){
+    if(i==num) {
+      return itr->second;
+    }
+    i++;
+  }       
+  return nullptr;  
+}
+
+LPool* sectionTable::getLPool(int num){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  int i=0;
+  for(;itr!=map.end();itr++){
+    if(i==num) {
+      return itr->second->pool;
+    }
+    i++;
+  }       
+  return nullptr;   
+}
+
+relocTable* sectionTable::getRelocTableI(int num){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  int i=0;
+  for(;itr!=map.end();itr++){
+    if(i==num) {
+      return itr->second->table;
+    }
+    i++;
+  }       
+  return nullptr;   
 }

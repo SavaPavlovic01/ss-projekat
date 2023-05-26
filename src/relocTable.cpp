@@ -38,4 +38,9 @@ int relocTable::getSizeOnDisk(){
     sz+=(4+4+4+4);
     if(vector[i]->symbol==-5) sz+=((strlen(vector[i]->name)+1)*sizeof(char));
   }  
+  return sz;
+}
+
+relocEntry* relocTable::getEntry(int num){
+  return vector[num];
 }

@@ -20,11 +20,15 @@ class LPool{
 
     void setAdr(int key,int adr);
 
+    int getEntryCnt(){return litMap.size()+symbMap.size();}
+
     void setAdr(char* key,int adr);
 
     literalEntry* getEntry(int key);
 
     literalEntry* getEntry(char* key);
+
+    literalEntry* getEntryNext(int num);
 
     int getAdr(int key);
 

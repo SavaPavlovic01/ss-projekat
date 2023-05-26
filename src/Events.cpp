@@ -1,7 +1,8 @@
 #include "../inc/Events.hpp"
 
 void Events::sectionFP(sectionTable* secTable,symbTable* symbTable,char* name,int* adrCnt){
-  if(sectionTable::curSection) secTable->setLen(sectionTable::curSection,*adrCnt);
+  //if(sectionTable::curSection) 
+  secTable->setLen(sectionTable::curSection,*adrCnt);
   sectionTable::curSection=name;
   secTable->insertSection(name,0,0);
   symbTable->insertSymb(name,-1,-1,0,false,true);
@@ -10,7 +11,7 @@ void Events::sectionFP(sectionTable* secTable,symbTable* symbTable,char* name,in
 }
 
 void Events::equFP(sectionTable* secTable,symbTable* table,argument* arg){
-  table->insertSymb(arg->name,secTable->getSectionId(sectionTable::curSection),0,arg->next->val1,false,true);
+  table->insertSymb(arg->name,-1,0,arg->next->val1,false,true);
 }
 
 void Events::globalFP(symbTable* table,argument* arg){

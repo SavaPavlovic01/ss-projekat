@@ -49,7 +49,9 @@ class sectionTable{
 
     int getSectionId(char* name);
 
-    LPool* getLPool(char* name);  
+    LPool* getLPool(char* name); 
+
+    LPool* getLPool(int num); 
 
     void printPool(char* name); 
 
@@ -60,6 +62,8 @@ class sectionTable{
     void solvePools();
 
     relocTable* getRelocTable(char* name);
+
+    relocTable* getRelocTableI(int num);
 
     void addContent(char* name,int code);
 
@@ -78,6 +82,16 @@ class sectionTable{
     int getSizeOnDiskNext(int num);
 
     int getSizeOnDiskSection(sectionTableItem* item);
+
+    void writeTable(FILE* file);
+
+    int getSize();
+
+    void addContent(int num,char byte);
+
+    relocTable* getRelocTable(int num);
+
+    sectionTableItem* getSection(int num);
 
 };
 

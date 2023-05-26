@@ -96,3 +96,17 @@ int LPool::sizeOfPool(){
   }  
   return sz;   
 }
+
+literalEntry* LPool::getEntryNext(int num){
+  int cnt=0;
+   std::map<int,literalEntry*>::iterator itr=litMap.begin();
+  for(;itr!=litMap.end();itr++){
+    if(cnt==num) return itr->second;
+    cnt++;
+  }  
+  std::map<std::string,literalEntry*>::iterator itr1=symbMap.begin();
+  for(;itr1!=symbMap.end();itr1++){
+    if(cnt==num) return itr->second;
+  }  
+  return nullptr; 
+}

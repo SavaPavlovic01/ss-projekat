@@ -26,6 +26,8 @@ class symbTable {
   public:
     bool insertSymb(symbTableItem*);
 
+    int getSymbCnt(){return table.size();}
+
     bool insertSymb(char* name,int section,int type,int value,bool globalDef,bool isDef);
 
     /*
@@ -33,6 +35,8 @@ class symbTable {
     * If the symbol doesnt exist, returns null
     */
     symbTableItem* getSymb(char* name);
+
+    symbTableItem* getSymb(int num);
 
     int setGlobalDef(char* name,bool val);
 

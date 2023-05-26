@@ -25,3 +25,7 @@ test:
 obj:
 	rm -rf objdump
 	g++ ./src/objdump.cpp -g -o objdump
+
+
+link:
+	g++ ./src/linker/linker.cpp ./src/symbTable.cpp ./src/sectionTable.cpp ./src/relocTable.cpp -g -o linker ./src/LPool.cpp

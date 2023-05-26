@@ -113,3 +113,15 @@ bool symbTable::isDefined(){
   return true;  
 }
 
+symbTableItem* symbTable::getSymb(int num){
+  int i=0;
+  std::unordered_map<std::string,symbTableItem*>::iterator itr=table.begin();
+  for(;itr!=table.end();itr++){
+    if(i==num){
+      return itr->second;
+    }
+    i++;
+  }
+  return nullptr;
+}
+

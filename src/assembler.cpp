@@ -62,6 +62,9 @@ int main(int argc,char** argv){
 
   symbTable table;
   sectionTable sTable;
+  char* h=(char*)malloc(sizeof(char)*4);
+  h[0]='A';h[1]='B';h[2]='S';h[3]='\0';
+  sTable.insertSection(h,0,0);
   
   instrHelp help;
   help.initInstr();
@@ -100,7 +103,7 @@ int main(int argc,char** argv){
         char* n=help.getSymbolsFromArg(curArg);
         if(n) table.insertSymb(n,0,2,0,false,false);
         if(curArg->type==1){
-          if(strcmp(cur->name,".equ")!=0){
+          if(cur->name[0]!='.'){
             LPool* pool=sTable.getLPool(sectionTable::curSection);
             pool->insertLit(curArg->val1,0);
           }
@@ -179,37 +182,37 @@ int main(int argc,char** argv){
 
   FILE* file=fopen(out,"wb");
 
-  //sTable.writeNext(0,out);
-  //sTable.writeNext(1,out);
-  //sTable.writeNextReloc(0,out);
-  //table.writeTable(out,&sTable);
+  
   printf("%d",sTable.getSizeOnDiskNext(0));
-  int secCount=sTable.getSectionCnt()+1;
+  int secCount=sTable.getSectionCnt()+2;
   fwrite(&secCount,4,1,file);
   int adr=8*secCount;
   int sz=table.getSizeOnDisk();
   fwrite(&adr,4,1,file);// offset do tabele simbola
   fwrite(&sz,4,1,file);// velicina tabele simbola
 
-  for(int i=0;i<secCount-1;i++){
+  adr=8*(secCount-1)+sz;
+  sz=sTable.getSize();
+  fwrite(&adr,4,1,file); //offset do tabele sekcija
+  fwrite(&sz,4,1,file); // velicina tabele sekcija
+
+  for(int i=0;i<secCount-2;i++){
     adr=(secCount-1-i)*8;
     adr+=table.getSizeOnDisk();
+    adr+=sTable.getSize();// ne racuna offset dobro
     sz=sTable.getSizeOnDiskNext(i);
     fwrite(&adr,4,1,file);// offset do pocetka sekcije
     fwrite(&sz,4,1,file);// velicina sekcije
   }
 
   table.writeTable(file,&sTable);
-  for(int i=0;i<secCount-1;i++){
+  sTable.writeTable(file);
+  for(int i=0;i<secCount-2;i++){
     adr=sTable.getSizeOnDiskNext(i);
     fwrite(&adr,4,1,file);// offset do tabele relokacionih zapisa
     sTable.writeNext(i,file);
     sTable.writeNextReloc(i,file);
   }
-
-  FILE* file1=fopen("test1.o","wb");
-
-  sTable.writeNext(0,file1);
 
   return 0;
 }

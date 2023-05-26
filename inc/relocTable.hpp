@@ -27,6 +27,10 @@ class relocTable{
     void writeTable(FILE* file);
 
     int getSizeOnDisk();
+
+    int getEntryCnt(){return vector.size();}
+
+    relocEntry* getEntry(int num);
 };
 
 #endif

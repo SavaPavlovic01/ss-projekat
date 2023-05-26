@@ -1,6 +1,6 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include "../inc/objdump.hpp"
 
 char* readString(FILE* file,char* store){
   char c;
@@ -13,19 +13,22 @@ char* readString(FILE* file,char* store){
     c=fgetc(file);
   }
   *temp='\0';
-
+  
   return store;
 }
 
 void printSection(FILE* file,int size){
   int cnt=0;
   char temp;
-  
-  while(cnt<size+4){
+  char* tempChar=(char*)malloc(sizeof(char)*256);
+  /*while(cnt<size){
     fread(&temp,sizeof(char),1,file);
     //printf("%x\n",temp);
     cnt+=1;
   }
+  printf("%d",cnt);*/
+  fread(tempChar,sizeof(char),size,file);
+  //printf("%s",tempChar);
 }
 
 void printReloc(FILE* file){
@@ -90,13 +93,29 @@ int main(int argc,char** argv){
     printf("%d\n",tempBool);
   }
 
+  int cntSec;
+  fread(&cntSec,4,1,file);
+  int k;
+  printf("TABELA SEKCIJA\n");
+  for(int i=0;i<cntSec;i++){
+    printf("Ulaz %d: ",i);
+    fread(&k,4,1,file);
+    printf("%d ",k);
+    fread(&k,4,1,file);
+    printf("%d ",k);
+    fread(&k,4,1,file);
+    printf("%d ",k);
+    readString(file,tempString);
+    printf("%s\n",tempString);
+  }
+
   // citamo sekcije i relok zapise
-  int secCount=cnt1-1;
+  int secCount=cnt1-2;
   int byteCount=0;
   //printf("Relok tabele\n");
   for(int i=0;i<secCount;i++){
     printf("Relok tabela sekcije %d\n",i);
-    printSection(file,sizes[i+1]);
+    printSection(file,sizes[i+2]);
     printReloc(file);
   }
   

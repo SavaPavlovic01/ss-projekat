@@ -4,6 +4,7 @@
 .equ ascii_code, 84 # ascii(’T’)
 .extern my_counter
 .global handler
+.skip 1
 .section my_code_handler
 handler:
  push %r1
