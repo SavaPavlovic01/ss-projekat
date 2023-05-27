@@ -110,7 +110,7 @@ void sectionTable::printCode(sectionTableItem* item){
   std::vector<cc*> help=*(item->content);
   for(int i=0;i<item->content->size();i++){
     if(help[i]->type==0) printf("%x\n",help[i]->code);
-    else printf("%x\n",help[i]->byte);
+    else printf("%02x\n",(unsigned char)help[i]->byte);
   }
 }
 
@@ -271,4 +271,11 @@ relocTable* sectionTable::getRelocTableI(int num){
     i++;
   }       
   return nullptr;   
+}
+
+void sectionTable::mergeSections(sectionTableItem* itemD,sectionTableItem* itemS){
+  itemD->len+=itemS->len;
+  for(int i=0;i<itemS->content->size();i++){
+    itemD->content->push_back(itemS->content->operator[](i));
+  }
 }

@@ -44,3 +44,9 @@ int relocTable::getSizeOnDisk(){
 relocEntry* relocTable::getEntry(int num){
   return vector[num];
 }
+
+void relocTable::updateTable(int increment){
+  for(int i=0;i<vector.size();i++){
+    vector[i]->offset+=increment;
+  }
+}

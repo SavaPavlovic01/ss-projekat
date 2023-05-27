@@ -55,7 +55,7 @@ int instrHelp::calcSize(instruction* instr){
   }
   if(str.compare("ld")==0){
     if((instr->arg1->type==0 && instr->arg1->mode==7)) return 16;
-    if((instr->arg1->type==1 && instr->arg1->mode==2)) return 8;
+    if((instr->arg1->mode==2)) return 8;
     else return 4;
   }
 

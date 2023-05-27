@@ -31,6 +31,8 @@ class relocTable{
     int getEntryCnt(){return vector.size();}
 
     relocEntry* getEntry(int num);
+
+    void updateTable(int increment);
 };
 
 #endif

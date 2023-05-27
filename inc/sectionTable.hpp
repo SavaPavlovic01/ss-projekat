@@ -93,6 +93,8 @@ class sectionTable{
 
     sectionTableItem* getSection(int num);
 
+    static void mergeSections(sectionTableItem* itemD,sectionTableItem* itemS);
+
 };
 
 #endif
