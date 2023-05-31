@@ -78,6 +78,8 @@ class codeGen{
     static generated* csrrd(context*);
 
     static generated* csrwr(context*);
+
+    static generated* section(context*);
 };
 
 #endif

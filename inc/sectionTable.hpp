@@ -39,9 +39,11 @@ class sectionTable{
 
     bool insertSection(char* name,int base,int len);
 
+    void insertSection(char* name,int base,int len,int ndx);
+
     sectionTableItem* getSection(char* name);
 
-    int getSectionCnt() {return cnt;}
+    int getSectionCnt() {return map.size();}
 
     bool setLen(char* name,int len);
 
@@ -94,6 +96,8 @@ class sectionTable{
     sectionTableItem* getSection(int num);
 
     static void mergeSections(sectionTableItem* itemD,sectionTableItem* itemS);
+
+    char* getSectionNameById(int id);
 
 };
 

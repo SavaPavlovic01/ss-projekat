@@ -33,6 +33,8 @@ class relocTable{
     relocEntry* getEntry(int num);
 
     void updateTable(int increment);
+
+    static void mergeReloc(relocTable* dest,relocTable* source);
 };
 
 #endif

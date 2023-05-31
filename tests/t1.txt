@@ -1,0 +1,10 @@
+.global lol,ok
+.section my
+lol:
+  jmp ok
+.section kek
+add %r1,%r1
+ok:
+  .skip 4
+  halt
+.end  

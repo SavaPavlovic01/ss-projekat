@@ -58,8 +58,15 @@ void Events::asciiSP(sectionTable* secTable,instruction* instr){
   char* str=instr->arg1->name;
   str++;
   while(*str!='\"'){
-     secTable->addContent(sectionTable::curSection,*str);
-     str++;
+    if(*str==92){
+      str++;
+      if(*str=='\"') {secTable->addContent(sectionTable::curSection,(char)92);break;}
+      if(*str=='n'){secTable->addContent(sectionTable::curSection,'\n'); continue;}
+      if(*str=='t'){secTable->addContent(sectionTable::curSection,'\t'); continue;}
+      if(*str=='r'){secTable->addContent(sectionTable::curSection,'\r'); continue;}
+    }
+    secTable->addContent(sectionTable::curSection,*str);
+    str++;
   }
  
  

@@ -25,6 +25,7 @@
 //promeni call na push pa ld
 // uslovni skok moze: proveris suprotan uslov, ako nije ispunjen propadnes na bezuslovni skok ako je ispunjen preskocis bezuslovni
 // onda moras i drugu vrstu relok zapisa
+// popravi ascii, dodaj jmp ispred bazena
 
 int main(int argc,char** argv){
 
@@ -127,10 +128,12 @@ int main(int argc,char** argv){
         Events::equFP(&sTable,&table,cur->arg1); 
       }
       if(strcmp(cur->name,".global")==0){
+        for(argument* ca=cur->arg1;ca;ca=ca->next)
         Events::globalFP(&table,cur->arg1); 
       }
       if(strcmp(cur->name,".extern")==0){
-        Events::externFP(&table,cur->arg1->name);
+        for(argument* ca=cur->arg1;ca;ca=ca->next)
+        Events::externFP(&table,ca->name);
       }
       if(strcmp(cur->name,".end")==0){
         Events::endFP(&sTable,cnt);

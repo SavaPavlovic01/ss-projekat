@@ -1,0 +1,17 @@
+.section text
+ld $0x1000,%r14
+ld $1,%r1
+ld $2,%r2
+st %r1,0x0
+jmp skok
+ld $3,%r3
+skok:
+add %r2,%r1
+ld 0x0,%r3
+push %r1
+push %r1
+push %r1
+pop %r9
+int
+halt
+.end

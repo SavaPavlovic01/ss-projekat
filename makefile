@@ -18,9 +18,9 @@ clean:
 	rm -rf ./misc/lexer.h ./misc/lex.yy.c ./misc/parser.tab.h ./misc/parser.tab.c runMe
 
 test:
-	gcc -c ./src/instruction.c ./misc/lex.yy.c ./misc/parser.tab.c
-	g++ -c ./src/main.cpp
-	g++ instruction.o lex.yy.o parser.tab.o main.o -o run
+	./assembler ./tests/emuTest.txt -o emu.o
+	./linker emu.o -place=text@0x40000000 -hex -o emu.hex
+	./emulator emu.hex
 
 obj:
 	rm -rf objdump
@@ -29,3 +29,17 @@ obj:
 
 link:
 	g++ ./src/linker/linker.cpp ./src/symbTable.cpp ./src/sectionTable.cpp ./src/relocTable.cpp -g -o linker ./src/LPool.cpp
+
+em:
+	g++ ./src/emu.cpp ./src/Emulator.cpp -g -o emulator
+
+ra:
+	./assembler -o main.o ./testA/main.s
+	./assembler -o math.o ./testA/math.s
+	./assembler -o ivt.o ./testA/ivt.s
+	./assembler -o isr_reset.o ./testA/isr_reset.s
+	./assembler -o isr_terminal.o ./testA/isr_terminal.s
+	./assembler -o isr_timer.o ./testA/isr_timer.s
+	./assembler -o isr_user0.o ./testA/isr_user0.s
+	./linker -hex -o program.hex ivt.o math.o main.o -place=my_code@0x40000000 isr_reset.o isr_terminal.o isr_timer.o isr_user0.o
+	./emulator program.hex

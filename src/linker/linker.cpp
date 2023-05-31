@@ -10,23 +10,26 @@
 
 char* readString(FILE* file,char* store){
   char c;
+  int cnt=0;
   char* temp=store;
   c=fgetc(file);
   while(true){
     if(c=='\0' || c==EOF) break;
     *temp=c;
     temp++;
+    cnt++;
     c=fgetc(file);
   }
   *temp='\0';
-  
+  store=(char*)realloc(store,sizeof(char)*(cnt+1));
   return store;
 }
 
 void readSec(FILE* file,int size,sectionTable* secTable,int ndx){
   int cnt=0;
   char data;
-  fread(&data,1,4,file);
+  int temp;
+  fread(&temp,1,4,file);
   while(cnt<size-4){
     fread(&data,1,1,file);
     secTable->addContent(ndx,data);
@@ -73,6 +76,7 @@ void readAll(std::vector<symbTable*>* symbTables,std::vector<sectionTable*>* sec
     fread(&temp,4,1,file); //offset  
     fread(&temp,4,1,file); // size sekcije
     sizes.push_back(temp);  
+    //printf("STUCK 1 %d\n",cnt);
   }
   int cnt1;
   //citamo tabelu simbola
@@ -91,7 +95,9 @@ void readAll(std::vector<symbTable*>* symbTables,std::vector<sectionTable*>* sec
     readString(file,name);
     fread(&globalDef,sizeof(bool),1,file);
     syTable->insertSymb(name,section,type,value,globalDef,true);
+    //printf("STUCK 2 %d\n",cnt1);
   }
+  syTable->printTable();
 
   symbTables->push_back(syTable);
 
@@ -107,14 +113,17 @@ void readAll(std::vector<symbTable*>* symbTables,std::vector<sectionTable*>* sec
     fread(&base,4,1,file);
     fread(&len,4,1,file);
     readString(file,name);
-    secTable->insertSection(name,base,sizes[i+2]-4);
+    secTable->insertSection(name,base,sizes[i+2]-4,ndx);
+    //printf("STUCK 3 %d\n",cntSec);
   }
+  secTable->printTable();
   secTables->push_back(secTable);
 
   int secCount=cnt-2;
   for(int i=0;i<secCount;i++){
     readSec(file,sizes[i+2],secTable,i);
     readRelocL(file,i,secTable);
+    //printf("STUCK 4 %d\n",secCount);
   }
 
 }
@@ -225,7 +234,9 @@ int main(int argc,char** argv){
     readAll(&symbTables,&secTables,inputFile[i]);
   }
   
-  
+  for(int i=0;i<secTables.size();i++){
+    secTables[i]->printTable();
+  }
   
   
   // postavljamo pocetne adrese sekcija
@@ -313,16 +324,17 @@ int main(int argc,char** argv){
 
   if(mode==1){
     for(int i=0;i<secTables.size();i++){
-      base=0;
+      
       for(int cnt=0;cnt<secTables[i]->getSectionCnt();cnt++){
         sectionTableItem* curSection=secTables[i]->getSection(cnt);
-
+        base=0;
         std::string str(curSection->name);
         if(doneSections.find(str)==doneSections.end()){
           base+=curSection->len;
           doneSections.insert(str);
           mergedSections.insertSection(curSection->name,0,0);
           sectionTable::mergeSections(mergedSections.getSection(curSection->name),curSection);
+          relocTable::mergeReloc(mergedSections.getRelocTable(curSection->name),curSection->table);
 
           for(int j=i+1;j<secTables.size();j++){
             for(int cnt1=0;cnt1<secTables[j]->getSectionCnt();cnt1++){
@@ -333,6 +345,8 @@ int main(int argc,char** argv){
                 base+=item1->len;
                 sectionTable::mergeSections(mergedSections.getSection(curSection->name),item1);
                 item1->table->updateTable(base-item1->len);
+                relocTable::mergeReloc(mergedSections.getRelocTable(curSection->name),item1->table);
+                //mergedSections.setLen(curSection->name,mergedSections.getSection(curSection->name)->len+item1->len);
                 for(int h=0;h<secTables[j]->getSectionCnt();h++){
                   sectionTableItem* cs=secTables[j]->getSection(h);
                   relocTable* reloc=cs->table;
@@ -340,7 +354,7 @@ int main(int argc,char** argv){
                     relocEntry* curRelocEntry=reloc->getEntry(hh);
                     if(curRelocEntry->symbol==item1->cnt){
                       curRelocEntry->addend+=base-item1->len;
-                      curRelocEntry->symbol=mergedSections.getSectionId(item1->name);
+                      //curRelocEntry->symbol=mergedSections.getSectionId(item1->name);
                     }
                   }
                 }
@@ -348,6 +362,24 @@ int main(int argc,char** argv){
               } 
             }
           }
+        }
+      }
+    }
+  }
+
+  if(mode==1){
+    for(int i=0;i<secTables.size();i++){
+      sectionTable* curSectionTable=secTables[i];
+      for(int cnt=0;cnt<curSectionTable->getSectionCnt();cnt++){
+        sectionTableItem* curSection=curSectionTable->getSection(cnt);
+        relocTable* curReloc=curSection->table;
+        for(int cntReloc=0;cntReloc<curReloc->getEntryCnt();cntReloc++){
+          char* name;
+          relocEntry* curEntry=curReloc->getEntry(cntReloc);
+          for(int help=0;help<curSectionTable->getSectionCnt();help++) {
+            if(curSectionTable->getSection(help)->cnt==curEntry->symbol) name=curSectionTable->getSection(help)->name;
+          } 
+          curEntry->symbol=mergedSections.getSectionId(name);
         }
       }
     }
@@ -364,6 +396,8 @@ int main(int argc,char** argv){
   // postavljamo vrednosti simbola
   std::map<std::string,int> globalSymbols;
   std::vector<symbTableItem*> unresolved;
+
+  symbTable globalSymb;
 
   for(int i=0;i<symbTables.size();i++){
     symbTable* curTable=symbTables[i];
@@ -385,6 +419,8 @@ int main(int argc,char** argv){
           curSymbol->value=k->base+curSymbol->value;
           if(curSymbol->globalDef) {
             std::string str(curSymbol->name);
+            globalSymb.insertSymb(curSymbol->name,mergedSections.getSectionId(secTables[i]->getSectionNameById(curSymbol->section)),
+              curSymbol->type,curSymbol->value,true,true);
             if(globalSymbols.find(str)!=globalSymbols.end()) {printf("Multiple definitions of %s\n",curSymbol->name);exit(0);}
             globalSymbols[str]=curSymbol->value;
           }
@@ -395,6 +431,7 @@ int main(int argc,char** argv){
   }
 
   for(int i=0;i<unresolved.size();i++){
+    if(mode==1) break;
     std::string str(unresolved[i]->name);
     std::map<std::string,int>::iterator itr=globalSymbols.find(str);
     if(itr==globalSymbols.end()){
@@ -443,9 +480,11 @@ int main(int argc,char** argv){
 
   for(int i=0;i<secTables.size();i++){
     (secTables[i])->printTable();
-    secTables[i]->printAllReloc();
+    //secTables[i]->printAllReloc();
   }
 
+  mergedSections.printAllReloc();
+  
   
   for(int i=0;i<symbTables.size();i++){
     //(symbTables[i])->printTable();
@@ -456,8 +495,37 @@ int main(int argc,char** argv){
   }
 
   mergedSections.printTable();
-
+  mergedSections.printAllReloc();
+  globalSymb.printTable();
+  int tri=3;
   FILE* file=fopen(outFile,"wb");
-  writeHex(file,outOrder);
+  if(mode==0) writeHex(file,outOrder);
+  if(mode==1) {
+    int secCount=mergedSections.getSectionCnt()+2;
+    fwrite(&secCount,4,1,file);// broj sekcija
+    fwrite(&tri,4,1,file); //offset do tabele simbola
+    int sz=globalSymb.getSizeOnDisk();
+    fwrite(&sz,4,1,file);//velicina tabele simbola
+
+    fwrite(&tri,4,1,file);// offset tabela sekcija
+    sz=mergedSections.getSize();
+    fwrite(&sz,4,1,file);// velicina tabele sekcija
+
+    for(int i=0;i<secCount-2;i++){
+      fwrite(&tri,4,1,file);
+      sz=mergedSections.getSizeOnDiskNext(i);
+      fwrite(&sz,4,1,file);
+    }
+
+    globalSymb.writeTable(file,&mergedSections);
+    mergedSections.writeTable(file);
+
+    for(int i=0;i<secCount-2;i++){
+      fwrite(&tri,4,1,file);//offset
+      mergedSections.writeNext(i,file);
+      mergedSections.writeNextReloc(i,file);
+    }
+
+  }
   
 }

@@ -279,3 +279,18 @@ void sectionTable::mergeSections(sectionTableItem* itemD,sectionTableItem* itemS
     itemD->content->push_back(itemS->content->operator[](i));
   }
 }
+
+void sectionTable::insertSection(char* name,int base,int len,int ndx){
+  if(getSection(name)) return;
+  std::string str(name);
+  map[str]=new sectionTableItem(name,0,len,ndx);   
+  return;    
+}
+
+char* sectionTable::getSectionNameById(int id){
+  std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
+  for(;itr!=map.end();itr++){
+    if(itr->second->cnt==id) return itr->second->name;
+  }
+  return nullptr;
+}

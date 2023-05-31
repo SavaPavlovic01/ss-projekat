@@ -131,9 +131,10 @@ generated* codeGen::bgt(context* context){
   if(arg->type==1){
     // literal
     if(arg->mode==2){
-      int offset=arg->val1-*(context->count)-4;
-      return new generated(generate(0b0011,0b0001,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
-      // relokacioni zapis 
+      
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->val1)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      generated* ret=new generated(generate(0b0011,0b1011,15,instr->arg1->val1,instr->arg1->next->val1,pcOffset),nullptr); //ld [pc + offset do bazena],%pc
+
     }
   }
   if(arg->type==2){
@@ -141,15 +142,18 @@ generated* codeGen::bgt(context* context){
       // ovo moze da se svede na jednu instrukciju ako ostajes u istoj sekciji
       if(context->secTable->getSectionId(sectionTable::curSection)==context->symbtable->getSection(arg->name)){
         int offset=context->symbtable->getValue(arg->name)-*(context->count)-4;
-        return new generated(generate(0b0011,0b0011,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
+        if(offset<=1<<12) return new generated(generate(0b0011,0b0011,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
       }
-      int off=*(context->count);// ovo potencijalno moze da se menja
+      
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->name)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      generated* ret=new generated(generate(0b0011,0b1011,15,instr->arg1->val1,instr->arg1->next->val1,pcOffset),nullptr); //ld [pc + offset do bazena],%pc
+      
+      int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->name);
       int section=context->symbtable->getSection(arg->name);
-      int addend=context->symbtable->getValue(arg->name)-4; //proveri
-      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,arg->name,0);
-      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,section,addend);
-      return new generated(generate(0b0011,0b0011,15,instr->arg1->val1,instr->arg1->next->val1,0),nullptr);
-      // treba relokacioni zapis (ova zadnja nula mora da se promeni) 
+      int addend=context->symbtable->getValue(arg->name);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,instr->arg1->name,addend);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
+      return ret;
     }
   }
 }
@@ -160,9 +164,8 @@ generated* codeGen::bne(context* context){
   if(arg->type==1){
     // literal
     if(arg->mode==2){
-      int offset=arg->val1-*(context->count)-4;
-      return new generated(generate(0b0011,0b0001,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
-      // relokacioni zapis 
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->val1)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      generated* ret=new generated(generate(0b0011,0b1010,15,instr->arg1->val1,instr->arg1->next->val1,pcOffset),nullptr);  
     }
   }
   if(arg->type==2){
@@ -170,15 +173,17 @@ generated* codeGen::bne(context* context){
       // ovo moze da se svede na jednu instrukciju ako ostajes u istoj sekciji
       if(context->secTable->getSectionId(sectionTable::curSection)==context->symbtable->getSection(arg->name)){
         int offset=context->symbtable->getValue(arg->name)-*(context->count)-4;
-        return new generated(generate(0b0011,0b0010,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
+        if(offset<=1<<12) return new generated(generate(0b0011,0b0010,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
       }
-      int off=*(context->count);// ovo potencijalno moze da se menja
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->name)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      generated* ret=new generated(generate(0b0011,0b1010,15,instr->arg1->val1,instr->arg1->next->val1,pcOffset),nullptr); //ld [pc + offset do bazena],%pc
+      
+      int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->name);
       int section=context->symbtable->getSection(arg->name);
-      int addend=context->symbtable->getValue(arg->name)-4; //proveri
-      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,arg->name,0);
-      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,section,addend);
-      return new generated(generate(0b0011,0b0010,15,instr->arg1->val1,instr->arg1->next->val1,0),nullptr);
-      // treba relokacioni zapis (ova zadnja nula mora da se promeni) 
+      int addend=context->symbtable->getValue(arg->name);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,instr->arg1->name,addend);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
+      return ret;
     }
   }  
 }
@@ -189,8 +194,8 @@ generated* codeGen::beq(context* context){
   if(arg->type==1){
     // literal
     if(arg->mode==2){
-      int offset=arg->val1-*(context->count)-4;
-      return new generated(generate(0b0011,0b0001,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->val1)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      generated* ret=new generated(generate(0b0011,0b1001,15,instr->arg1->val1,instr->arg1->next->val1,pcOffset),nullptr);  
       // relokacioni zapis 
     }
   }
@@ -199,15 +204,17 @@ generated* codeGen::beq(context* context){
       // ovo moze da se svede na jednu instrukciju ako ostajes u istoj sekciji
       if(context->secTable->getSectionId(sectionTable::curSection)==context->symbtable->getSection(arg->name)){
         int offset=context->symbtable->getValue(arg->name)-*(context->count)-4;
-        return new generated(generate(0b0011,0b0001,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
+        if(offset<=1<<12)return new generated(generate(0b0011,0b0001,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
       }
-      int off=*(context->count);// ovo potencijalno moze da se menja
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->name)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      generated* ret=new generated(generate(0b0011,0b1001,15,instr->arg1->val1,instr->arg1->next->val1,pcOffset),nullptr); //ld [pc + offset do bazena],%pc
+      
+      int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->name);
       int section=context->symbtable->getSection(arg->name);
-      int addend=context->symbtable->getValue(arg->name)-4; //proveri
-      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,arg->name,0);
-      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,section,addend);
-      return new generated(generate(0b0011,0b0001,15,instr->arg1->val1,instr->arg1->next->val1,0),nullptr);
-      // treba relokacioni zapis (ova zadnja nula mora da se promeni) 
+      int addend=context->symbtable->getValue(arg->name);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,instr->arg1->name,addend);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
+      return ret;
     }
   }
 }
@@ -218,9 +225,9 @@ generated* codeGen::call(context* context){
   if(arg->type==1){
     // literal
     if(arg->mode==2){
-      int offset=arg->val1-*(context->count)-4;
-      return new generated(generate(0b0011,0b0001,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
-      // relokacioni zapis (ne treaba?????)
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->val1)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      generated* ret=new generated(generate(0b0010,0b0001,15,0,0,pcOffset),nullptr);  
+      // relokacioni zapis
     }
   }
   if(arg->type==2){
@@ -228,15 +235,17 @@ generated* codeGen::call(context* context){
       // ovo moze da se svede na jednu instrukciju ako ostajes u istoj sekciji
       if(context->secTable->getSectionId(sectionTable::curSection)==context->symbtable->getSection(arg->name)){
         int offset=context->symbtable->getValue(arg->name)-*(context->count)-4;
-        return new generated(generate(0b0010,0b0000,15,0,0,offset),nullptr);
+        if(offset<=1<<12) return new generated(generate(0b0010,0b0000,15,0,0,offset),nullptr);
       }
-      int off=*(context->count);// ovo potencijalno moze da se menja
-      int section=context->symbtable->getSection(instr->arg1->name);
-      int addend=context->symbtable->getValue(instr->arg1->name)-4; //proveri
-      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,instr->arg1->name,0);
-      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,1,section,addend);
-      return new generated(generate(0b0010,0b0000,15,0,0,0),nullptr);
-      // treba relokacioni zapis (ova zadnja nula mora da se promeni) 
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->name)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      generated* ret=new generated(generate(0b0010,0b0001,15,0,0,pcOffset),nullptr); //ld [pc + offset do bazena],%pc
+      
+      int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->name);
+      int section=context->symbtable->getSection(arg->name);
+      int addend=context->symbtable->getValue(arg->name);
+      if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,instr->arg1->name,addend);
+      else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
+      return ret;
     }
   }  
 }
@@ -246,8 +255,8 @@ generated* codeGen::ret(context* context){
 }
 
 generated* codeGen::iret(context* context){
-  generated* head=new generated(generate(0b1001,0b0110,0,14,0,-4),nullptr);
-  head->next=new generated(generate(0b1001,0b0011,15,14,0,-8),nullptr);
+  generated* head=new generated(generate(0b1001,0b0110,0,14,0,4),nullptr);
+  head->next=new generated(generate(0b1001,0b0011,15,14,0,8),nullptr);
   return head;
 }
 
@@ -257,9 +266,10 @@ generated* codeGen::jmp(context* context){
   if(arg->type==1){
     // literal
     if(arg->mode==2){
-      int offset=arg->val1-*(context->count)-4;
-      return new generated(generate(0b0011,0b0001,15,instr->arg1->val1,instr->arg1->next->val1,offset),nullptr);
-      // relokacioni zapis (ne treba?????)
+      
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->val1)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      generated* ret=new generated(generate(0b1001,0b0010,15,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%pc
+
     }
   }
   if(arg->type==2){
@@ -301,35 +311,15 @@ generated* codeGen::st(context* context){
       // [reg + simbol ili literal]
       if(arg2->name==nullptr){
         // literal
-        int tempReg=1;
-        while(tempReg==arg2->val1 || tempReg==instr->arg1->val1) tempReg++;
-        generated* head=new generated(0,nullptr);
-        head->code=generate(0b1000,0b0001,14,0,tempReg,-4);// push %rx
-        int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg2->val2)-*(context->count)-4;
-        head->next=new generated(generate(0b1001,0b0010,tempReg,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%r1
-        generated* cur=head->next;
-        cur->next=new generated(generate(0b1000,0b0000,arg2->val1,tempReg,instr->arg1->val1,0),nullptr);// st
-        cur=cur->next;
-        cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
-        return head;
+        
+        if(arg2->val2>(1<<11)-1 || arg2->val2<-(1<<11)) {printf("Greska");exit(0);}
+        return new generated(generate(0b1000,0b0000,arg2->val1,0,instr->arg1->val1,arg2->val2),nullptr);
       }else {
         //simbol
-        int tempReg=1;
-        while(tempReg==arg2->val1 || tempReg==instr->arg1->val1) tempReg++;
-        generated* head=new generated(0,nullptr);
-        head->code=generate(0b1000,0b0001,14,0,tempReg,-4);// push %rx
-        int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg2->name)-*(context->count)-4;
-        head->next=new generated(generate(0b1001,0b0010,tempReg,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%r1
-        generated* cur=head->next;
-        cur->next=new generated(generate(0b1000,0b0000,arg2->val1,tempReg,instr->arg1->val1,0),nullptr);// st
-        cur=cur->next;
-        cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
-        int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg2->name);
-        int section=context->symbtable->getSection(arg2->name);
-        int addend=context->symbtable->getValue(arg2->name);
-        if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,arg2->name,addend);
-        else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
-        return head;
+        if(context->symbtable->getSymb(arg2->name)->section!=-1){printf("Greska dodaj pls!");exit(0);}
+        int val=context->symbtable->getSymb(arg2->name)->value;
+        if(val>(1<<11)-1 || val<-(1<<11)) {printf("Greska pls");exit(0);}
+        return new generated(generate(0b1000,0b0000,arg2->val1,0,instr->arg1->val1,val),nullptr);
       }
     }
   }
@@ -337,40 +327,23 @@ generated* codeGen::st(context* context){
     // literal
     if(arg2->mode==1){} // $literal greska
     if(arg2->mode==2){ // literal
-      int tempReg=1;
-      if(tempReg==instr->arg1->val1) tempReg++;
-      generated* head=new generated(0,nullptr);
-      head->code=generate(0b1000,0b0001,14,0,tempReg,-4);// push %rx
       int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg2->val1)-*(context->count)-4;
-      head->next=new generated(generate(0b1001,0b0010,tempReg,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%r1
-      generated* cur=head->next;
-      cur->next=new generated(generate(0b1000,0b0000,tempReg,0,instr->arg1->val1,0),nullptr);// st
-      cur=cur->next;
-      cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
-      return head;
+      return new generated(generate(0b1000,0b0010,15,0,instr->arg1->val1,pcOffset),nullptr);
     }
   }
   if(arg2->type==2){
     if(arg2->mode==1){} // $symbol greska
     if(arg2->mode==2){  // symbol
-      int tempReg=1;
-      if(tempReg==instr->arg1->val1) tempReg++;
-      generated* head=new generated(0,nullptr);
-      head->code=generate(0b1000,0b0001,14,0,tempReg,-4);// push %rx
       int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg2->name)-*(context->count)-4;
-      head->next=new generated(generate(0b1001,0b0010,tempReg,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%r1
-      generated* cur=head->next;
-      cur->next=new generated(generate(0b1000,0b0000,tempReg,0,instr->arg1->val1,0),nullptr);// st
-      cur=cur->next;
-      cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
-      //relok zapis
+      generated* head= new generated(generate(0b1000,0b0010,15,0,instr->arg1->val1,pcOffset),nullptr);
+      // i relokacioni zapis
       int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg2->name);
       int section=context->symbtable->getSection(arg2->name);
       int addend=context->symbtable->getValue(arg2->name);
       if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,arg2->name,addend);
       else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
       return head;
-      // i relokacioni zapis
+
     }
   }
 }
@@ -398,36 +371,15 @@ generated* codeGen::ld(context* context){
       // operand je [%reg + simbol ili literal]
       if(instr->arg1->name==nullptr){
         //literal
-        int tempReg=1;
-        generated* head=new generated(0,nullptr);
-        if(instr->arg1->val1==1) tempReg=2; 
-        head->code=generate(0b1000,0b0001,14,0,tempReg,-4);// push %r1 ili r2;
         
-        int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->val2)-*(context->count)-4;
-        head->next=new generated(generate(0b1001,0b0010,tempReg,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%r1
-        generated* cur=head->next;
-        cur->next=new generated(generate(0b1001,0b0010,instr->arg1->next->val1,instr->arg1->val1,tempReg,0),nullptr);// ld
-        cur=cur->next;
-        cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
-        return head;
+        if(instr->arg1->val2>(1<<11)-1 || instr->arg1->val2<(-(1<<11))) {printf("Dodaj da lepo ispise");exit(0);}
+        return new generated(generate(0b1001,0b0010,instr->arg1->next->val1,instr->arg1->val1,0,instr->arg1->val2),nullptr);
       }else {
-        int tempReg=1;
-        generated* head=new generated(0,nullptr);
-        if(instr->arg1->val1==1) tempReg=2; 
-        head->code=generate(0b1000,0b0001,14,0,tempReg,-4);// push %r1 ili r2;
-        
-        int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->name)-*(context->count)-4;
-        head->next=new generated(generate(0b1001,0b0010,tempReg,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%r1
-        generated* cur=head->next;
-        cur->next=new generated(generate(0b1001,0b0010,instr->arg1->next->val1,instr->arg1->val1,tempReg,0),nullptr);// ld
-        cur=cur->next;
-        cur->next=new generated(generate(0b1001,0b0011,tempReg,14,0,4),nullptr);// pop %r1 ili r2
-        int off=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->name);
-        int section=context->symbtable->getSection(instr->arg1->name);
-        int addend=context->symbtable->getValue(instr->arg1->name);
-        if(section==-2) context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,instr->arg1->name,addend);
-        else context->secTable->getRelocTable(sectionTable::curSection)->addEntry(off,0,section,addend);
-        return head;
+        // symbol
+        if(context->symbtable->getSymb(instr->arg1->name)->section!=-1){printf("Greska dodaj pls!");exit(0);}
+        int val=context->symbtable->getSymb(instr->arg1->name)->value;
+        if(val>(1<<11)-1 || val<-(1<<11)) {printf("Greska pls");exit(0);}
+        return new generated(generate(0b1001,0b0010,instr->arg1->next->val1,instr->arg1->val1,0,val),nullptr);
       }
       
     }
@@ -436,7 +388,7 @@ generated* codeGen::ld(context* context){
   if(instr->arg1->type==1){
     if(instr->arg1->mode==1){
       // $literal
-      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->val2)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
+      int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(instr->arg1->val1)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
       generated* ret=new generated(generate(0b1001,0b0010,instr->arg1->next->val1,15,0,pcOffset),nullptr); //ld [pc + offset do bazena],%r1
       return ret;
     } 
@@ -477,3 +429,7 @@ generated* codeGen::ld(context* context){
   }
 }
 
+generated* codeGen::section(context* context){
+  int poolSize=context->secTable->getSection(sectionTable::curSection)->pool->getEntryCnt()*4;
+  return new generated(generate(0b0011,0,15,0,0,poolSize),nullptr);
+}

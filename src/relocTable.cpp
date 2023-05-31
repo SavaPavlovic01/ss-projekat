@@ -50,3 +50,9 @@ void relocTable::updateTable(int increment){
     vector[i]->offset+=increment;
   }
 }
+
+void relocTable::mergeReloc(relocTable* dest,relocTable* source){
+  for(int i=0;i<source->getEntryCnt();i++){
+    dest->vector.push_back(source->vector[i]);
+  }
+}

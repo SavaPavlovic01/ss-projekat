@@ -1,0 +1,8 @@
+.global re
+.section kek
+add %r1,%r1
+jmp re
+.section my
+re:
+  halt
+.end

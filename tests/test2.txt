@@ -16,7 +16,7 @@ wait:
 .global my_counter
 .section my_data
 my_counter:
- .skip 3
+ .ascii "Sava je kul lik \n"
  kita:
   ld kita,%r1
 .end

@@ -54,7 +54,6 @@ int instrHelp::calcSize(instruction* instr){
     else return 16;
   }
   if(str.compare("ld")==0){
-    if((instr->arg1->type==0 && instr->arg1->mode==7)) return 16;
     if((instr->arg1->mode==2)) return 8;
     else return 4;
   }
@@ -65,7 +64,7 @@ int instrHelp::calcSize(instruction* instr){
 int instrHelp::getInstrSize(instruction* instr){
   std::string str(instr->name);
   std::map<std::string, instrInfo*>::iterator itr=instrMap.find(str);
-  if(itr==instrMap.end()) return -2;
+  if(itr==instrMap.end()) return 0;
   if(itr->second->size==-1){
     return calcSize(instr);
   }
@@ -163,16 +162,16 @@ void instrHelp::initInstr(){
   instrMap["shl"]=new instrInfo(2,0,4,1,1,-1,&codeGen::shl);
   instrMap["shr"]=new instrInfo(0,0,4,1,1,-1,&codeGen::shr);
   instrMap["ld"]=new instrInfo(2,0,-1,0,1,-1,&codeGen::ld);
-  instrMap["st"]=new instrInfo(2,0,-1,1,0,-1,&codeGen::st);
+  instrMap["st"]=new instrInfo(2,0,4,1,0,-1,&codeGen::st);
   instrMap["csrrd"]=new instrInfo(2,0,4,2,1,-1,&codeGen::csrrd);
   instrMap["csrwr"]=new instrInfo(2,0,4,1,2,-1,&codeGen::csrwr);
 
   instrMap[".global"]=new instrInfo(-1,1,0,3,-1,-1,nullptr);
   instrMap[".extern"]=new instrInfo(-1,1,0,3,-1,-1,nullptr);
-  instrMap[".section"]=new instrInfo(1,1,0,3,-1,-1,nullptr);
+  instrMap[".section"]=new instrInfo(1,1,4,3,-1,-1,&codeGen::section);
   instrMap[".word"]=new instrInfo(-1,1,-1,5,-1,-1,nullptr); // -1 znaci da je promenljiva i mora da se izracuna
   instrMap[".skip"]=new instrInfo(1,1,-1,4,-1,-1,nullptr);
   instrMap[".ascii"]=new instrInfo(1,1,-1,3,-1,-1,nullptr);
-  instrMap[".end"]=new instrInfo(0,1,0,-1,-1,-1,nullptr);
+  instrMap[".end"]=new instrInfo(0,1,4,-1,-1,-1,&codeGen::section);
   instrMap[".equ"]=new instrInfo(2,1,0,3,4,-1,nullptr);
 }
