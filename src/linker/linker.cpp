@@ -178,7 +178,7 @@ bool compareSections(sectionTableItem* i1,sectionTableItem* i2){
 
 int main(int argc,char** argv){
 
-  std::map<std::string,int> sectionLocations;
+  std::map<std::string,unsigned int> sectionLocations;
   std::vector<char*> inputFile;
   const char* outFile="out\0";
   char mode=-1;
@@ -199,7 +199,7 @@ int main(int argc,char** argv){
         it++;
       }
 
-      sectionLocations[help]=std::stoi(help1,0,16);
+      sectionLocations[help]=(std::stol(help1,0,16));
       continue;
     }
     if(strcmp(argv[i],"-o")==0){
@@ -247,7 +247,7 @@ int main(int argc,char** argv){
   
   int maxBase=0;
   int base=0;
-  std::map<std::string,int>::iterator itr=sectionLocations.begin();
+  std::map<std::string,unsigned int>::iterator itr=sectionLocations.begin();
   for(;itr!=sectionLocations.end();itr++){
     if(mode==1) break;
     for(int i=0;i<secTables.size();i++){
@@ -294,7 +294,7 @@ int main(int argc,char** argv){
     
       std::string str(curSection->name);
       if(doneSections.find(str)==doneSections.end()) {
-        std::map<std::string,int>::iterator itr=sectionLocations.find(str);
+        std::map<std::string,unsigned int>::iterator itr=sectionLocations.find(str);
         if(itr!=sectionLocations.end()){
           base=itr->second;
         }

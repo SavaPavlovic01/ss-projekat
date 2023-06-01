@@ -31,7 +31,7 @@ link:
 	g++ ./src/linker/linker.cpp ./src/symbTable.cpp ./src/sectionTable.cpp ./src/relocTable.cpp -g -o linker ./src/LPool.cpp
 
 em:
-	g++ ./src/emu.cpp ./src/Emulator.cpp -g -o emulator
+	g++ -pthread ./src/emu.cpp ./src/Emulator.cpp -g -o emulator
 
 ra:
 	./assembler -o main.o ./testA/main.s
@@ -43,3 +43,9 @@ ra:
 	./assembler -o isr_user0.o ./testA/isr_user0.s
 	./linker -hex -o program.hex ivt.o math.o main.o -place=my_code@0x40000000 isr_reset.o isr_terminal.o isr_timer.o isr_user0.o
 	./emulator program.hex
+
+sad:
+	./assembler -o inter1.o ./tests/test1.txt
+	./assembler -o inter2.o ./tests/test2.txt
+	./linker -hex inter1.o inter2.o -place=my_code_main@0x40000000 -place=my_code_handler@0xc0000000 -o inter.hex
+	./emulator inter.hex

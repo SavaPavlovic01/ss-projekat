@@ -2,6 +2,7 @@
 #define _Emulator_hpp_
 #include <map>
 #include <vector>
+#include <termios.h>
 
 typedef struct instr{
   int oc;
@@ -24,7 +25,30 @@ class Emulator{
   std::vector<int> regFile;
   std::vector<int> sysRegs;
 
+  static int term_out;
+  static int term_in;
+
+  static int tim_cfg;
+
+  struct termios old;
+  struct termios current;
+
+  static bool in;
+  
+  int interrupt=0;
   public:
+
+    void initTerminal();
+
+    void restoreTerminal();
+
+    void checkInter();
+
+    static void* readTerminalThread(void*);
+
+    static void* writeTerminalThread(void*);
+
+    static void* myTimer(void*);
 
     void initEmulator(FILE* file);
 
@@ -36,13 +60,13 @@ class Emulator{
 
     char readByte(int adr);
 
-    int readInt(int adr);
+    int readInt(unsigned int adr);
 
     int readReg(int num);
 
     void writeReg(int num,int data);
 
-    void writeInt(int adr,int data);
+    void writeInt(unsigned int adr,int data);
 
     int readInstruction();
 

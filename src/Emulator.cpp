@@ -1,4 +1,12 @@
 #include "../inc/emulator.hpp"
+#include <stdio.h>
+#include <unistd.h>
+#include <time.h>
+
+int Emulator::term_in=0;
+int Emulator::term_out=0;
+int Emulator::tim_cfg=0;
+bool Emulator::in=false;
 
 void Emulator::initEmulator(FILE* file){
   for(int i=0;i<15;i++) regFile.push_back(0);
@@ -6,7 +14,7 @@ void Emulator::initEmulator(FILE* file){
 
   for(int i=0;i<4;i++) sysRegs.push_back(0);
 
-  int curAdr;
+  unsigned int curAdr;
   while(fread(&curAdr,4,1,file)>0){
     int sz;
     fread(&sz,4,1,file);
@@ -28,6 +36,7 @@ void Emulator::initEmulator(FILE* file){
 }
 
 void Emulator::error(instr* instruction){
+  restoreTerminal();
   exit(0);
   regFile[14]-=4;
   writeInt(regFile[14],sysRegs[0]);//push status
@@ -58,9 +67,18 @@ char Emulator::readByte(int adr){
   return itr->second[adr%256];
 }
 
-int Emulator::readInt(int adr){
+int Emulator::readInt(unsigned int adr){
   std::vector<unsigned char> temp;
-  int curAdr=adr;
+  unsigned int curAdr=adr;
+  if(adr==0xffffff00){
+    return term_out; 
+  }
+  if(adr==0xffffff04){
+    return term_in;  
+  }
+  if(adr==0xFFFFFF10){
+    return tim_cfg;
+  }
   for(int i=0;i<4;i++){
     std::map<int,unsigned char*>::iterator itr=memory.find(curAdr/256);  
     if(itr==memory.end()){
@@ -77,9 +95,22 @@ int Emulator::readInt(int adr){
   return ret;
 }
 
-void Emulator::writeInt(int adr,int data){
+void Emulator::writeInt(unsigned int adr,int data){
  
-  int curAdr=adr;
+  unsigned int curAdr=adr;
+  if(adr==0xffffff00){
+    term_out=data; 
+    in=true;
+    return;
+  }
+  if(adr==0xffffff04){
+    term_in=data;
+    return;
+  }
+  if(adr==0xFFFFFF10){
+    tim_cfg=data;
+    return;
+  }
   for(int i=0;i<4;i++){
     unsigned char in=(data>>i*8) & 0x000000ff;
     std::map<int,unsigned char*>::iterator itr=memory.find(curAdr/256);  
@@ -179,6 +210,7 @@ void Emulator::executeInstr(instr* instruction){
 }
 
 void Emulator::executeHalt(instr* instruction){
+  restoreTerminal();
   printf("-----------------------------------------------------------------\n");
   printf("Emulated processor executed halt instruction\n");
   printf("Emulated processor state:\n");
@@ -324,18 +356,16 @@ void Emulator::executeSt(instr* instruction){
   {
   case 0:
     writeInt(readReg(instruction->a)+readReg(instruction->b)+instruction->disp,readReg(instruction->c));
-    printf("STORE NA ADRESI %x UPISAO %x",readReg(instruction->a)+readReg(instruction->b)+instruction->disp,readInt(readReg(instruction->a)+readReg(instruction->b)+instruction->disp));
+    
     break;
   
   case 2:
     writeInt(readInt(readReg(instruction->a)+readReg(instruction->b)+instruction->disp),readReg(instruction->c));
-    printf("STORE NA ADRESI %x UPISAO %x",readInt(readReg(instruction->a)+readReg(instruction->b)+instruction->disp),readInt(readInt(readReg(instruction->a)+readReg(instruction->b)+instruction->disp)));
     break;
 
   case 1:
     writeReg(instruction->a,readReg(instruction->a)+instruction->disp);
     writeInt(readReg(instruction->a),readReg(instruction->c));
-    printf("STORE NA ADRESI %x UPISAO %x",readReg(instruction->a),readInt(readReg(instruction->a)));
     break;
 
   default:
@@ -385,4 +415,123 @@ void Emulator::executeLd(instr* instruction){
     error(instruction);
     break;
   }
+}
+
+void* Emulator::readTerminalThread(void* arg){
+  Emulator* emu=(Emulator*) arg;
+  unsigned char key;
+  while(true){
+    while(read(0,&key,1)==0);
+    if(key=='k') {emu->restoreTerminal();emu->printRegs();exit(0);}
+    //printf("%c",key);
+    //fflush(0);
+    Emulator::term_in=key;
+    emu->interrupt=1;
+    emu->sysRegs[2]=3;
+  }
+}
+
+void Emulator::checkInter(){
+  //printf("Cause: %d",sysRegs[0]);
+  //printf("Status: %d",sysRegs[2]);
+  if(interrupt==0) return;
+  if(sysRegs[0]&4==4) return;
+  
+  if(sysRegs[2]==3 && ((sysRegs[0] & 2)==0)){
+    regFile[14]-=4;
+    writeInt(regFile[14],sysRegs[0]);//push status
+    regFile[14]-=4;
+    writeInt(regFile[14],regFile[15]);//push pc
+    sysRegs[2]=3; 
+    interrupt=0;
+    sysRegs[0]=sysRegs[0] & 0b0000;
+    regFile[15]=sysRegs[1];  
+  }
+
+  if(sysRegs[2]==2 && ((sysRegs[0] & 1)==0)){
+    regFile[14]-=4;
+    writeInt(regFile[14],sysRegs[0]);//push status
+    regFile[14]-=4;
+    writeInt(regFile[14],regFile[15]);//push pc
+    sysRegs[2]=2; 
+    interrupt=0;
+    sysRegs[0]=sysRegs[0] & 0b0000;
+    regFile[15]=sysRegs[1];    
+  }
+}
+
+void* Emulator::writeTerminalThread(void*){
+ 
+  while(true){
+    while(!in);
+    printf("%c",term_out);
+    fflush(0);
+    in=false;
+  }
+}
+
+void* Emulator::myTimer(void* arg){
+  Emulator* emu=(Emulator*) arg;
+  long msec=0;
+  long sec=0;
+  while(true){
+    
+    sec=0;
+    struct timespec ts;
+    switch (tim_cfg)
+    {
+    case 0:
+      msec=500;
+      break;
+    case 1:
+      msec=0;
+      sec=1;
+      break;
+    case 2:
+      msec=500;
+      sec=1;
+      break;
+    case 3:
+      msec=0;
+      sec=2;
+      break;
+    case 4:
+      msec=0;
+      sec=5;
+      break;
+    case 5:
+      msec=0;
+      sec=10;
+      break;
+    case 6:
+      msec=0;
+      sec=30;
+      break;
+    case 7:
+      msec=0;
+      sec=60;
+      break;
+    default:
+      msec=0;
+      sec=0;
+      break;
+    }
+    ts.tv_sec=sec;
+    ts.tv_nsec=msec*1000000;
+    nanosleep(&ts,&ts);
+    emu->interrupt=1;
+    emu->sysRegs[2]=2;
+  }
+}
+
+void Emulator::initTerminal(){
+  tcgetattr(0,&old);
+  //cfmakeraw(&current);
+  current.c_lflag &= ~ICANON;
+  current.c_lflag &= ~ECHO;
+  tcsetattr(0,TCSANOW,&current);  
+}
+
+void Emulator::restoreTerminal(){
+  tcsetattr(0,TCSANOW,&old);  
 }
