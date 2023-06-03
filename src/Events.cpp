@@ -10,8 +10,9 @@ void Events::sectionFP(sectionTable* secTable,symbTable* symbTable,char* name,in
   // u .end mora da se stavi duzina zadnje sekcije
 }
 
-void Events::equFP(sectionTable* secTable,symbTable* table,argument* arg){
-  table->insertSymb(arg->name,-1,0,arg->next->val1,false,true);
+void Events::equFP(sectionTable* secTable,symbTable* table,argument* arg,Tns* tns){
+  //table->insertSymb(arg->name,-1,0,arg->next->val1,false,true);
+  tns->addEntry(arg->name,arg);
 }
 
 void Events::globalFP(symbTable* table,argument* arg){
@@ -61,9 +62,9 @@ void Events::asciiSP(sectionTable* secTable,instruction* instr){
     if(*str==92){
       str++;
       if(*str=='\"') {secTable->addContent(sectionTable::curSection,(char)92);break;}
-      if(*str=='n'){secTable->addContent(sectionTable::curSection,'\n'); continue;}
-      if(*str=='t'){secTable->addContent(sectionTable::curSection,'\t'); continue;}
-      if(*str=='r'){secTable->addContent(sectionTable::curSection,'\r'); continue;}
+      if(*str=='n'){secTable->addContent(sectionTable::curSection,'\n');str++; continue;}
+      if(*str=='t'){secTable->addContent(sectionTable::curSection,'\t');str++; continue;}
+      if(*str=='r'){secTable->addContent(sectionTable::curSection,'\r');str++; continue;}
     }
     secTable->addContent(sectionTable::curSection,*str);
     str++;

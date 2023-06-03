@@ -24,7 +24,7 @@ class Emulator{
   std::map<int,unsigned char*> memory;
   std::vector<int> regFile;
   std::vector<int> sysRegs;
-
+  public:
   static int term_out;
   static int term_in;
 
@@ -58,13 +58,15 @@ class Emulator{
 
     void printRegs();
 
-    char readByte(int adr);
+    char readByte(unsigned int adr);
 
     int readInt(unsigned int adr);
 
     int readReg(int num);
 
     void writeReg(int num,int data);
+
+    void writeSysReg(int num,int data){sysRegs[num]=data;}
 
     void writeInt(unsigned int adr,int data);
 

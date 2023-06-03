@@ -48,6 +48,21 @@ int instrHelp::calcSize(instruction* instr){
   }
   if(str.compare(".ascii")==0){
     return (std::string(instr->arg1->name).size()-2);
+    char* str=instr->arg1->name;
+    int cnt=0;
+    str++;
+    while(*str!='\"'){
+      if(*str==92){
+        str++;
+        if(*str=='\"') {cnt++;break;}
+        if(*str=='n'){cnt++;str++; continue;}
+        if(*str=='t'){cnt++;str++; continue;}
+        if(*str=='r'){cnt++;str++; continue;}
+      }
+      cnt++;
+      str++;
+    }
+    return cnt;
   }
   if(str.compare("st")==0){
     if(instr->arg1->next->type==0 && instr->arg1->next->mode==6) return 4;
@@ -88,6 +103,9 @@ bool instrHelp::isValid(instruction* instr){
   if(strcmp(instr->name,"st")==0){
     if(instr->arg1->next->type==2 && instr->arg1->next->mode==1) return false;
     if(instr->arg1->next->type==1 && instr->arg1->next->mode==1) return false;
+    return true;
+  }
+  if(strcmp(instr->name,".equ")==0){
     return true;
   }
   if(info->argCnt!=-1){
@@ -173,5 +191,5 @@ void instrHelp::initInstr(){
   instrMap[".skip"]=new instrInfo(1,1,-1,4,-1,-1,nullptr);
   instrMap[".ascii"]=new instrInfo(1,1,-1,3,-1,-1,nullptr);
   instrMap[".end"]=new instrInfo(0,1,4,-1,-1,-1,&codeGen::section);
-  instrMap[".equ"]=new instrInfo(2,1,0,3,4,-1,nullptr);
+  instrMap[".equ"]=new instrInfo(-1,1,0,3,4,-1,nullptr);
 }

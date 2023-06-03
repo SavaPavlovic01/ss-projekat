@@ -412,7 +412,15 @@ int main(int argc,char** argv){
         else curSymbol->value=itr->second;
       }
       else {
-        if(curSymbol->section==-1){}// simbol definisan sa equ, ne menjamo mu vrednost
+        if(curSymbol->section==-1){
+          if(curSymbol->globalDef){
+            std::string str(curSymbol->name);
+            globalSymb.insertSymb(curSymbol->name,-1,
+              curSymbol->type,curSymbol->value,true,true);
+            if(globalSymbols.find(str)!=globalSymbols.end()) {printf("Multiple definitions of %s\n",curSymbol->name);exit(0);}
+            globalSymbols[str]=curSymbol->value;
+          }
+        }// simbol definisan sa equ, ne menjamo mu vrednost
         else {
           // mora da bude u istom fajlu
           sectionTableItem* k=secTables[i]->getSection(curSymbol->section);

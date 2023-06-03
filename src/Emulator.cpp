@@ -58,7 +58,7 @@ void Emulator::printMemory(){
   }
 }
 
-char Emulator::readByte(int adr){
+char Emulator::readByte(unsigned int adr){
   std::map<int,unsigned char*>::iterator itr=memory.find(adr/256);
   if(itr==memory.end()){
     memory[adr/256]=(unsigned char*) malloc(sizeof(char)*256);
@@ -101,6 +101,8 @@ void Emulator::writeInt(unsigned int adr,int data){
   if(adr==0xffffff00){
     term_out=data; 
     in=true;
+    printf("%c",term_out);
+    fflush(0);
     return;
   }
   if(adr==0xffffff04){

@@ -4,6 +4,7 @@
 #include "sectionTable.hpp"
 #include "symbTable.hpp"
 #include "instruction.h"
+#include "TNS.hpp"
 
 class Events{
 
@@ -11,7 +12,7 @@ class Events{
   public:
     static void sectionFP(sectionTable* secTable,symbTable* symbTable,char* name,int* adrCnt);
 
-    static void equFP(sectionTable* secTable,symbTable* symbTable,argument* arg);
+    static void equFP(sectionTable* secTable,symbTable* symbTable,argument* arg,Tns* tns);
 
     static void globalFP(symbTable* table,argument* arg);
     

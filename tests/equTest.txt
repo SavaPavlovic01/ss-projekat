@@ -1,0 +1,19 @@
+.equ b,c-a
+.equ a,d-4
+.equ c,e+5
+.equ d,10
+.equ e,15 
+.equ len,fin-start
+.section text
+ld $a,%r1 #6
+ld $b,%r2 #14
+ld $c,%r3 #20
+ld $d,%r4 #10
+ld $e,%r5 #15
+ld $len,%r6
+halt
+start:
+.ascii "Sava je kul lik\e"
+fin:
+
+.end

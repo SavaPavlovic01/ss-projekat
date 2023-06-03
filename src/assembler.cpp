@@ -8,6 +8,7 @@
 #include "../inc/codeGen.hpp"
 #include "../inc/instrHelp.hpp"
 #include "../inc/relocTable.hpp"
+#include "../inc/TNS.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -63,6 +64,8 @@ int main(int argc,char** argv){
 
   symbTable table;
   sectionTable sTable;
+  Tns tns;
+
   char* h=(char*)malloc(sizeof(char)*4);
   h[0]='A';h[1]='B';h[2]='S';h[3]='\0';
   sTable.insertSection(h,0,0);
@@ -125,7 +128,7 @@ int main(int argc,char** argv){
         Events::sectionFP(&sTable,&table,cur->arg1->name,&cnt);  
       }
       if(strcmp(cur->name,".equ")==0){
-        Events::equFP(&sTable,&table,cur->arg1); 
+        Events::equFP(&sTable,&table,cur->arg1,&tns); 
       }
       if(strcmp(cur->name,".global")==0){
         for(argument* ca=cur->arg1;ca;ca=ca->next)
@@ -143,6 +146,7 @@ int main(int argc,char** argv){
     }
     
   }
+  tns.solveTns(&table);
   table.isDefined();
   
   sTable.solvePools();
@@ -150,6 +154,7 @@ int main(int argc,char** argv){
   printf("\n");
   sTable.printTable();
   sTable.printAllPools();
+  
   sectionTable::curSection=nullptr;
   cur=instrHead;
   cnt=0;

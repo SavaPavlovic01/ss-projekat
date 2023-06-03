@@ -22,6 +22,7 @@
 %token<num> NUMBER
 %token<str> STRING
 %type<arg> ARGUMENT
+%type<arg> EXPRESSION
 
 %token EOL
 %token LSQR
@@ -32,6 +33,8 @@
 %token DOLLAR
 %token REG
 %token DD
+%token MINUS
+%token<str> EQU
 
 %%
 program:
@@ -41,6 +44,10 @@ line:
   EOL {
 
   }
+  | EQU STRING COMMA EXPRESSION {
+    argument* arg=makeArg(2,1,$2,0,0,$4);
+    makeInstr($1,arg,0);
+  } 
   | STRING EOL {
     makeInstr($1,NULL,0);
     printf("Found instr %s with 0 args\n", $1);
@@ -55,6 +62,27 @@ line:
   | STRING DD operacija {
     makeInstr($1,NULL,1);  
   };
+
+EXPRESSION:
+  STRING EXPRESSION {
+    $$=makeArg(2,1,$1,0,0,$2);
+  }
+  | NUMBER EXPRESSION {
+    $$=makeArg(1,1,NULL,$1,0,$2);
+  }
+  | PLUS NUMBER EXPRESSION {
+    $$=makeArg(1,1,NULL,$2,0,$3);
+  }
+  | MINUS NUMBER EXPRESSION {
+    $$=makeArg(1,1,NULL,$2,1,$3);
+  }
+  | PLUS STRING EXPRESSION {
+    $$=makeArg(2,1,$2,0,0,$3);
+  }
+  | MINUS STRING EXPRESSION {
+    $$=makeArg(2,1,$2,0,1,$3);
+  }
+  | EOL {$$=NULL;};
 
 operacija:
   EOL {

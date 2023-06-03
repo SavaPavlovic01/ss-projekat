@@ -1,6 +1,6 @@
 #SRCS:=./misc/lex.yy.c ./misc/parser.tab.c ./src/instruction.c ./src/main.c
 SRCS:=./src/instruction.c ./misc/lex.yy.c ./misc/parser.tab.c ./src/assembler.cpp ./src/symbTable.cpp \
-./src/instrHelp.cpp ./src/Events.cpp ./src/sectionTable.cpp ./src/LPool.cpp ./src/codeGen.cpp ./src/relocTable.cpp
+./src/instrHelp.cpp ./src/Events.cpp ./src/sectionTable.cpp ./src/LPool.cpp ./src/codeGen.cpp ./src/relocTable.cpp ./src/TNS.cpp
 #DEPS:=./inc/instruction.h ./misc/parser.tab.h ./misc/lexer.h
 DEPS:=./misc/parser.tab.h ./misc/lexer.h 
 

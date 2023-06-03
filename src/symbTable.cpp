@@ -107,7 +107,10 @@ bool symbTable::isDefined(){
   for(;itr!=table.end();itr++){
     if(!(itr->second->isDef)){
       printf("%s is not defined",itr->second->name);
-      exit(0);
+      //exit(0);
+      itr->second->isDef=true;
+      itr->second->section=-2;
+      
     }
   }
   return true;  

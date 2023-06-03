@@ -227,6 +227,7 @@ generated* codeGen::call(context* context){
     if(arg->mode==2){
       int pcOffset=context->secTable->getLPool(sectionTable::curSection)->getAdr(arg->val1)-*(context->count)-4;// -4 jer pc pokazuje na sledecu 
       generated* ret=new generated(generate(0b0010,0b0001,15,0,0,pcOffset),nullptr);  
+      return ret;
       // relokacioni zapis
     }
   }

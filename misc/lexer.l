@@ -11,6 +11,8 @@
 %%
 [ \t] {}
 
+".equ" {yylval.str=strdup(yytext);return EQU;}
+
 [A-Za-z_\.][A-Za-z0-9_]* {
   char* temp=yytext;
   while(*temp!='\0'){
@@ -42,6 +44,8 @@
 [\n\r] {return EOL;}
 
 "[" {return LSQR;}
+
+"-" {return MINUS;}
 
 "]" {return RSQR;}
 
