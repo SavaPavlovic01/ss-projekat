@@ -11,10 +11,10 @@ void relocTable::addEntry(int offset,int type,char* name,int addend){
 }
 
 void relocTable::printTable(){
-  printf("offset        type        symbol        addend        name\n");
+  printf("offset        type        symbol    addend        name\n");
   for(int i=0;i<vector.size();i++){
-    printf("%d        %d        %d        %d        ",vector[i]->offset,vector[i]->type,vector[i]->symbol,vector[i]->addend);
-    if(vector[i]->name) printf("%s",vector[i]->name);
+    printf("%08x        %02d        %02d        %08x        ",vector[i]->offset,vector[i]->type,vector[i]->symbol,vector[i]->addend);
+    if(vector[i]->name) printf("%-16s",vector[i]->name);
     printf("\n");
   }
 }

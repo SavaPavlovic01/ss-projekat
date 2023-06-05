@@ -20,7 +20,7 @@ void Events::globalFP(symbTable* table,argument* arg){
 }
 
 void Events::externFP(symbTable* table,char* name){
-  table->insertSymb(name,-2,1,0,0,true);
+  table->insertSymb(name,-2,1,0,true,true);
 }
 
 void Events::endFP(sectionTable* table,int cnt){

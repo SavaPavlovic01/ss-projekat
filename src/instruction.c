@@ -65,3 +65,23 @@ void printArg(argument* arg){
   }
   
 }
+
+void printOne(instruction* instr){
+  printf("%s ",instr->name);
+  argument* arg;
+  for(;arg;arg=arg->next){
+    if(arg->type==0){
+      if(arg->mode==5){
+        printf("%%r%d ",arg->val1);
+        continue;
+      }
+      if(arg->mode==6){
+        printf("[%%r%d] ");
+        continue;
+      }
+      if(arg->mode==7){
+        
+      }
+    }
+  }
+}

@@ -40,9 +40,10 @@ bool sectionTable::setLen(char* name,int len){
 
 void sectionTable::printTable(){
   std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
-  printf("Name    Base    Len   Cnt\n");
+  
+  printf("Name                Base        Len        Cnt\n");
   for(;itr!=map.end();itr++){
-    printf("%s    %d    %d    %d\n",itr->second->name,itr->second->base,
+    printf("%-16s    %08x    %08x    %d\n",itr->second->name,itr->second->base,
       itr->second->len,itr->second->cnt);
   }  
 }
@@ -88,9 +89,11 @@ relocTable* sectionTable::getRelocTable(char* name){
 
 void sectionTable::printAllReloc(){
   std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
-  printf("RELOC TABLES\n");
+  //printf("RELOC TABLES\n");
   for(;itr!=map.end();itr++){
+    printf("%s.reloc\n",itr->second->name);
     itr->second->table->printTable();
+    printf("\n");
   }      
 }
 
@@ -108,18 +111,37 @@ void sectionTable::addContent(char* name,char byte){
 
 void sectionTable::printCode(sectionTableItem* item){
   std::vector<cc*> help=*(item->content);
+  int cnt=0;
   for(int i=0;i<item->content->size();i++){
-    if(help[i]->type==0) printf("%x\n",help[i]->code);
-    else printf("%02x\n",(unsigned char)help[i]->byte);
+    
+    if(help[i]->type==0) {
+      std::vector<unsigned char> h;
+      unsigned char cur;
+      for(int j=0;j<4;j++){
+        if(cnt %8 ==0) printf("%08x: ",cnt);
+        cur=(help[i]->code>>(j*8)) & 0x000000ff;
+        printf("%02x ",cur);
+        cnt++;
+        if(cnt %8 ==0) printf("\n");
+      }
+    }
+    else {
+      if(cnt%8==0) printf("%08x: ",cnt);
+      printf("%02x ",(unsigned char)help[i]->byte);
+      cnt++;
+      if(cnt %8==0) printf("\n");  
+    }
   }
+  item->pool->helpPrint(cnt);
 }
 
 void sectionTable::printAllCode(){
   std::map<std::string,sectionTableItem*>::iterator itr=map.begin();
-  printf("CODE \n");
+  
   for(;itr!=map.end();itr++){
-    printf("%s\n",itr->second->name);
+    printf("%s.code\n",itr->second->name);
     printCode(itr->second);
+    printf("\n");
   }        
 }
 

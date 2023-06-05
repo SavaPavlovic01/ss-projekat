@@ -110,3 +110,27 @@ literalEntry* LPool::getEntryNext(int num){
   }  
   return nullptr; 
 }
+
+void LPool::helpPrint(int cnt){
+  std::map<int,literalEntry*>::iterator itr=litMap.begin();
+  for(;itr!=litMap.end();itr++){
+    
+    for(int i=0;i<4;i++){
+      if(cnt%8==0)printf("%08x: ",cnt);
+      unsigned char cur=(itr->second->val>>i*8) & 0x000000ff;
+      printf("%02x ",cur);
+      cnt++;
+      if(cnt%8==0) printf("\n");
+    }  
+  }  
+  std::map<std::string,literalEntry*>::iterator itr1=symbMap.begin();
+  for(;itr1!=symbMap.end();itr1++){
+    for(int i=0;i<4;i++){
+      if(cnt%8==0)printf("%08x: ",cnt);
+      unsigned char cur=(itr1->second->val>>i*8) & 0x000000ff;
+      printf("%02x ",cur);
+      cnt++;
+      if(cnt%8==0) printf("\n");
+    }     
+  }
+}

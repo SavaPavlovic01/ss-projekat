@@ -150,10 +150,10 @@ int main(int argc,char** argv){
   table.isDefined();
   
   sTable.solvePools();
-  table.printTable();
-  printf("\n");
-  sTable.printTable();
-  sTable.printAllPools();
+  //table.printTable();
+  //printf("\n");
+  //sTable.printTable();
+  //sTable.printAllPools();
   
   sectionTable::curSection=nullptr;
   cur=instrHead;
@@ -162,7 +162,7 @@ int main(int argc,char** argv){
     con->instr=cur;
     generated* gen=help.getCode(con);
     for(;gen;gen=gen->next){
-      printf("%s:%x\n",cur->name,gen->code);
+      //printf("%s:%x\n",cur->name,gen->code);
       sTable.addContent(sectionTable::curSection,gen->code);
     }
     cnt+=help.getInstrSize(cur);
@@ -184,14 +184,14 @@ int main(int argc,char** argv){
    
   }
 
-  sTable.printAllReloc();
+  
 
   //sTable.printAllCode();
 
   FILE* file=fopen(out,"wb");
 
   
-  printf("%d",sTable.getSizeOnDiskNext(0));
+  
   int secCount=sTable.getSectionCnt()+2;
   fwrite(&secCount,4,1,file);
   int adr=8*secCount;
@@ -221,6 +221,17 @@ int main(int argc,char** argv){
     sTable.writeNext(i,file);
     sTable.writeNextReloc(i,file);
   }
+
+  FILE* fp=freopen(strcat(out,".txt"),"w",stdout);
+  //if(!fp) printf("Ne radi");
+  printf("Symbol table\n");
+  table.printTable();
+  printf("\nSection Table\n");
+  sTable.printTable();
+  printf("\n");
+  sTable.printAllReloc();
+  sTable.printAllCode();
+  fclose(fp);
 
   return 0;
 }

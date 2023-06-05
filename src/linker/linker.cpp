@@ -97,7 +97,7 @@ void readAll(std::vector<symbTable*>* symbTables,std::vector<sectionTable*>* sec
     syTable->insertSymb(name,section,type,value,globalDef,true);
     //printf("STUCK 2 %d\n",cnt1);
   }
-  syTable->printTable();
+  //syTable->printTable();
 
   symbTables->push_back(syTable);
 
@@ -116,7 +116,7 @@ void readAll(std::vector<symbTable*>* symbTables,std::vector<sectionTable*>* sec
     secTable->insertSection(name,base,sizes[i+2]-4,ndx);
     //printf("STUCK 3 %d\n",cntSec);
   }
-  secTable->printTable();
+  //secTable->printTable();
   secTables->push_back(secTable);
 
   int secCount=cnt-2;
@@ -156,6 +156,17 @@ void executeReloc(int data,int offset,sectionTableItem* section){
   }
 }
 
+void checkOverlap(std::vector<sectionTableItem*>& vec){
+  for(int i=0;i<vec.size()-1;i++){
+    if((unsigned int)vec[i]->base+(unsigned int)vec[i]->len>(unsigned int)vec[i+1]->base){
+      printf("%s and %s overlap\n",vec[i]->name,vec[i+1]->name);
+      printf("%08x %08x %s",vec[i+1]->base,vec[i+1]->len,vec[i+1]->name);
+      printf("\n");
+      printf("%08x %s",vec[i]->base,vec[i]->name);
+      exit(0);
+    }
+  }
+}
 
 void writeHex(FILE* file,std::vector<sectionTableItem*>& vec){
   int adr=0;
@@ -172,15 +183,37 @@ void writeHex(FILE* file,std::vector<sectionTableItem*>& vec){
   }
 }
 
+void printHex(std::vector<sectionTableItem*>& vec){
+  int adrOld=-2;
+  int adrCur=0;
+  bool jmp=false;
+  for(int i=0;i<vec.size();i++){
+    std::vector<cc*>* contents=vec[i]->content;
+    adrCur=vec[i]->base;
+    if(adrCur!=adrOld) {
+      printf("\n%08x: ",adrCur);
+      jmp=true;
+    }
+    for(int j=0;j<contents->size();j++){
+      if(adrCur%8==0 && !jmp) printf("%08x: ",adrCur);
+      printf("%02x ",(unsigned char)contents->operator[](j)->byte);
+      adrCur++;
+      if(adrCur%8==0) printf("\n");
+      jmp=false;
+    }
+    adrOld=adrCur;
+  }
+}
+
 bool compareSections(sectionTableItem* i1,sectionTableItem* i2){
-  return (i1->base<i2->base);
+  return ((unsigned int)i1->base<(unsigned int)i2->base);
 }
 
 int main(int argc,char** argv){
 
   std::map<std::string,unsigned int> sectionLocations;
   std::vector<char*> inputFile;
-  const char* outFile="out\0";
+  char* outFile;
   char mode=-1;
   for(int i=1;i<argc;i++){
     std::string str(argv[i]);
@@ -235,7 +268,7 @@ int main(int argc,char** argv){
   }
   
   for(int i=0;i<secTables.size();i++){
-    secTables[i]->printTable();
+    //secTables[i]->printTable();
   }
   
   
@@ -280,7 +313,7 @@ int main(int argc,char** argv){
             } 
           }
         }
-      }
+      }else if(itr->second>maxBase) maxBase=itr->second;
     }  
   }
 
@@ -386,7 +419,7 @@ int main(int argc,char** argv){
   }
 
   std::sort(outOrder.begin(),outOrder.end(),compareSections);
-
+  checkOverlap(outOrder);
   //sortVector(outOrder);
   
   /*for(int i=0;i<symbTables.size();i++){
@@ -450,10 +483,10 @@ int main(int argc,char** argv){
   }
 
   for(int i=0;i<secTables.size();i++){
-    printCode(secTables[i]);
+    //printCode(secTables[i]);
   }
 
-  printf("\n");printf("\n");printf("\n");
+  //printf("\n");printf("\n");printf("\n");
 
   // resavanje relokacionih zapisa
   for(int i =0; i<secTables.size();i++){
@@ -487,11 +520,11 @@ int main(int argc,char** argv){
   }
 
   for(int i=0;i<secTables.size();i++){
-    (secTables[i])->printTable();
+    //(secTables[i])->printTable();
     //secTables[i]->printAllReloc();
   }
 
-  mergedSections.printAllReloc();
+  //mergedSections.printAllReloc();
   
   
   for(int i=0;i<symbTables.size();i++){
@@ -499,15 +532,17 @@ int main(int argc,char** argv){
   }
 
   for(int i=0;i<secTables.size();i++){
-    printCode(secTables[i]);
+    //printCode(secTables[i]);
   }
 
-  mergedSections.printTable();
-  mergedSections.printAllReloc();
-  globalSymb.printTable();
+  //mergedSections.printTable();
+  //mergedSections.printAllReloc();
+  //globalSymb.printTable();
   int tri=3;
   FILE* file=fopen(outFile,"wb");
-  if(mode==0) writeHex(file,outOrder);
+  if(mode==0) {
+    writeHex(file,outOrder);
+  }
   if(mode==1) {
     int secCount=mergedSections.getSectionCnt()+2;
     fwrite(&secCount,4,1,file);// broj sekcija
@@ -535,5 +570,25 @@ int main(int argc,char** argv){
     }
 
   }
+  if(mode==0){
+    FILE* alo=freopen(strcat(outFile,".txt"),"w+",stdout);
+   
+    printHex(outOrder);
+    fclose(alo);
+  }
+  if(mode==1){
+    FILE* o=freopen(strcat(outFile,".txt"),"w",stdout);
+    printf("Symbol table\n");
+    globalSymb.printTable();  
+    printf("Section Table\n");
+    mergedSections.printTable();
+    printf("\n");
+    mergedSections.printAllReloc();
+    mergedSections.printAllCode();
+    fclose(o);
+
+  }
+
+  
   
 }

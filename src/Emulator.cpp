@@ -429,7 +429,7 @@ void* Emulator::readTerminalThread(void* arg){
     //fflush(0);
     Emulator::term_in=key;
     emu->interrupt=1;
-    emu->sysRegs[2]=3;
+    emu->interTerm=1;
   }
 }
 
@@ -439,24 +439,26 @@ void Emulator::checkInter(){
   if(interrupt==0) return;
   if(sysRegs[0]&4==4) return;
   
-  if(sysRegs[2]==3 && ((sysRegs[0] & 2)==0)){
+  if(interTerm>0 && ((sysRegs[0] & 2)==0)){
     regFile[14]-=4;
     writeInt(regFile[14],sysRegs[0]);//push status
     regFile[14]-=4;
     writeInt(regFile[14],regFile[15]);//push pc
     sysRegs[2]=3; 
     interrupt=0;
+    interTerm=0;
     sysRegs[0]=sysRegs[0] & 0b0000;
     regFile[15]=sysRegs[1];  
   }
 
-  if(sysRegs[2]==2 && ((sysRegs[0] & 1)==0)){
+  if(interTimer>0 && ((sysRegs[0] & 1)==0)){
     regFile[14]-=4;
     writeInt(regFile[14],sysRegs[0]);//push status
     regFile[14]-=4;
     writeInt(regFile[14],regFile[15]);//push pc
     sysRegs[2]=2; 
     interrupt=0;
+    interTimer=0;
     sysRegs[0]=sysRegs[0] & 0b0000;
     regFile[15]=sysRegs[1];    
   }
@@ -522,7 +524,7 @@ void* Emulator::myTimer(void* arg){
     ts.tv_nsec=msec*1000000;
     nanosleep(&ts,&ts);
     emu->interrupt=1;
-    emu->sysRegs[2]=2;
+    emu->interTimer=1;
   }
 }
 

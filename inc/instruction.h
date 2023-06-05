@@ -32,4 +32,6 @@ void printAll(instruction* head);
 
 void printArg(argument* arg);
 
+void printOne(instruction* instr);
+
 #endif

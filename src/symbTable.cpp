@@ -48,10 +48,10 @@ symbTableItem* symbTable::getSymb(char* name){
 
 void symbTable::printTable(){
   std::unordered_map<std::string,symbTableItem*>::iterator itr=table.begin();
-  printf("Name    Section   type    value   globalDef   isDef\n");
+  printf("Name            Ndx value   globalDef\n");
   for(;itr!=table.end();itr++){
-    printf("%s    %d    %d    %d    %d    %d\n",itr->second->name,itr->second->section,
-      itr->second->type,itr->second->value,itr->second->globalDef,itr->second->isDef);
+    printf("%-16s%02d  %08x %d\n",itr->second->name,itr->second->section,
+      itr->second->value,itr->second->globalDef);
   }
 }
 
@@ -106,7 +106,7 @@ bool symbTable::isDefined(){
   std::unordered_map<std::string,symbTableItem*>::iterator itr=table.begin();
   for(;itr!=table.end();itr++){
     if(!(itr->second->isDef)){
-      printf("%s is not defined",itr->second->name);
+      //printf("%s is not defined",itr->second->name);
       //exit(0);
       itr->second->isDef=true;
       itr->second->section=-2;

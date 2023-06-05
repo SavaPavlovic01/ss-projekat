@@ -36,6 +36,8 @@ class Emulator{
   static bool in;
   
   int interrupt=0;
+  int interTimer=0;
+  int interTerm=0;
   public:
 
     void initTerminal();
