@@ -9,3 +9,4 @@ Assembler, linker and emulator for an arm like language made for a course called
 
 ## Make commands
 make all
+make clean
